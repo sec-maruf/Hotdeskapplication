@@ -1,0 +1,18 @@
+<!-- desk_confirm_delete.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Confirm Delete</h1>
+    <p>Are you sure you want to delete desk "{{ desk.desk_id }}"?</p>
+    
+    <form method="post" action="{% url 'hotdesk:desk-delete' desk.id %}">
+        {% csrf_token %}
+        {{ solid_form.as_p }}
+        <input type="submit" value="Confirm Delete" class="btn btn-danger">
+        <a href="{% url 'hotdesk:dashboard' %}" class="btn btn-secondary">Cancel</a>
+        <a href="{% url 'hotdesk:solid-logout' %}" class="btn btn-secondary">Log Out</a>
+    </form>
+</div>
+{% endblock %}

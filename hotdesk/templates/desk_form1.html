@@ -1,0 +1,17 @@
+<!-- desk_form1.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Create New Desk</h1>
+    <form method="post" action="{% url 'hotdesk:desk-create' %}">
+        {% csrf_token %}
+        {{ desk_form.as_p }}
+        {{ solid_form.as_p }}
+        <button type="submit" class="btn btn-primary">Create Desk</button>
+        <a href="{% url 'hotdesk:dashboard' %}" class="btn btn-secondary">Cancel</a>
+        <a href="{% url 'hotdesk:solid-logout' %}" class="btn btn-secondary">Log Out</a>
+    </form>
+</div>
+{% endblock %}

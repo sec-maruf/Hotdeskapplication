@@ -1,0 +1,34 @@
+<!-- dashboard.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Dashboard</h2>
+    <a href="{% url 'hotdesk:desk-create' %}" class="btn btn-primary">Create Desk</a>
+
+    <h3>Update or Delete a Desk</h3>
+    <select id="desk-select" name="desk_id">
+        {% for desk in desks %}
+            <option value="{{ desk.id }}">{{ desk }}</option>
+        {% endfor %}
+    </select>
+    <a id="update-desk" href="#" class="btn btn-primary">Update Desk</a>
+    <a id="delete-desk" href="#" class="btn btn-danger">Delete Desk</a>
+    <a href="{% url 'hotdesk:solid-logout' %}" class="btn btn-secondary">Log Out</a>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const deskSelect = document.getElementById('desk-select');
+        const updateButton = document.getElementById('update-desk');
+        const deleteButton = document.getElementById('delete-desk');
+
+        deskSelect.addEventListener('change', function () {
+            const deskId = deskSelect.value;
+            updateButton.href = `/hotdesk/desk/update/${deskId}/`;
+            deleteButton.href = `/hotdesk/desk/delete/${deskId}/`;
+        });
+    });
+</script>
+{% endblock %}

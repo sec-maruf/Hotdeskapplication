@@ -1,0 +1,17 @@
+<!-- desk_update.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Update Desk</h2>
+    <form method="post" action="{% url 'hotdesk:desk-update' desk_id=desk.id %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        {{ solid_form.as_p }}
+        <button type="submit" class="btn btn-primary">Update</button>
+        <a href="{% url 'hotdesk:dashboard' %}" class="btn btn-secondary">Cancel</a>
+        <a href="{% url 'hotdesk:solid-logout' %}" class="btn btn-secondary">Log Out</a>
+    </form>
+</div>
+{% endblock %}

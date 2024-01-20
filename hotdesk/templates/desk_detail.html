@@ -1,0 +1,21 @@
+<!-- desk_detail.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}Desk Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Desk Details</h1>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Desk ID: {{ desk.desk_id }}</h5>
+            <p class="card-text">Location: {{ desk.location }}</p>
+            <p class="card-text">Availability: {{ desk.availability|yesno:"Available,Not Available" }}</p>
+            <a href="{% url 'hotdesk:dashboard' %}" class="btn btn-secondary">Cancel</a>
+            <a href="{% url 'hotdesk:solid-logout' %}" class="btn btn-secondary">Log Out</a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

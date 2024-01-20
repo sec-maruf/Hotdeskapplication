@@ -1,0 +1,14 @@
+<!-- solid_login.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Solid Login</h2>
+    <form method="post" action="{% url 'hotdesk:solid-login' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+</div>
+{% endblock %}
