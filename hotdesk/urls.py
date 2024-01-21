@@ -1,3 +1,4 @@
+#urls.py
 from django.urls import path
 from .views import desk_detail_view,desk_create_view, desk_update_view,desk_delete_view, solid_login_view, dashboard_view, solid_logout_view
 

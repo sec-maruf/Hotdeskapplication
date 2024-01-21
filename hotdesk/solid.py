@@ -1,3 +1,4 @@
+#solid.py
 from solid.auth import Auth
 from solid.solid_api import SolidAPI
 

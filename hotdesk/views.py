@@ -1,3 +1,5 @@
+# views.py
+
 from django.shortcuts import get_object_or_404, render, redirect
 import httpx
 from .models import Desk
@@ -50,41 +52,48 @@ def desk_detail_view(request, desk_id):
     return render(request, 'desk_detail.html', {'desk': desk})
 
 @solid_username_required(['hotdeskadmin'])
+
+
 def desk_update_view(request, desk_id):
     desk = get_object_or_404(Desk, pk=desk_id)
     form = DeskForm(request.POST or None, instance=desk)
     solid_form = SolidCredentialsForm(request.POST or None)
 
-    if request.method == 'POST' and form.is_valid() and solid_form.is_valid():
-        # Save the desk changes locally first
-        updated_desk = form.save()
+    if request.method == 'POST':
+        if form.is_valid() and solid_form.is_valid():
+            # Save the desk changes locally first
+            updated_desk = form.save()
 
-        # Convert the updated desk to RDF
-        graph = desk_to_rdf(updated_desk)
-        turtle_data = graph.serialize(format="turtle").decode("utf-8")
+            # Convert the updated desk to RDF
+            graph = desk_to_rdf(updated_desk)
+            turtle_data = graph.serialize(format="turtle").decode("utf-8")
 
-        # Get Solid credentials from the form
-        solid_data = solid_form.cleaned_data
-        api = get_solid_api(solid_data['idp'], solid_data['username'], solid_data['password'])
-        pod_file_url = f"{solid_data['pod_endpoint'].rstrip('/')}/desk{desk.id}.ttl"
-        
-        # Attempt to update the file in the Solid POD
-        try:
-            api.update_file(pod_file_url, turtle_data, 'text/turtle')
-            print("Desk POD file updated successfully.")
-            #messages.success(request, "Desk updated successfully on both local and Solid POD.")
-            return redirect(reverse('hotdesk:desk-detail', kwargs={'desk_id': desk.id}))
-        except httpx.HTTPStatusError as e:
-            # If updating the Solid POD fails, rollback the local changes
-            form.add_error(None, "Failed to update desk on Solid POD: " + str(e))
-            updated_desk.refresh_from_db()  # Reload the original desk from the database
-        except Exception as e:
-            # Handle any other exceptions
-            form.add_error(None, "An unexpected error occurred: " + str(e))
-            updated_desk.refresh_from_db()  # Reload the original desk from the database
+            # Get Solid credentials from the form
+            solid_data = solid_form.cleaned_data
+            api = get_solid_api(solid_data['idp'], solid_data['username'], solid_data['password'])
+            pod_file_url = f"{solid_data['pod_endpoint'].rstrip('/')}/desk{desk.id}.ttl"
+            
+            try:
+                # Use put_file method to update the file
+                api.put_file(pod_file_url, turtle_data, 'text/turtle')
+                print("Desk POD file updated successfully.")
+                #messages.success(request, "Desk updated successfully on both local and Solid POD.")
+                return redirect(reverse('hotdesk:desk-detail', kwargs={'desk_id': desk.id}))
+            except httpx.HTTPStatusError as e:
+                # If updating the Solid POD fails, rollback the local changes
+                form.add_error(None, "Failed to update desk on Solid POD: " + str(e))
+                updated_desk.refresh_from_db()  # Reload the original desk from the database
+            except Exception as e:
+                # Handle any other exceptions
+                form.add_error(None, "An unexpected error occurred: " + str(e))
+                updated_desk.refresh_from_db()  # Reload the original desk from the database
+        # Render the form with errors if the form is not valid
+        return render(request, 'desk_update.html', {'desk_form': form, 'solid_form': solid_form, 'desk_id': desk_id})
 
-    # Render the form for GET requests or if the form is not valid
-    return render(request, 'desk_update.html', {'form': form, 'solid_form': solid_form, 'desk': desk})
+    # GET request or POST request with invalid form data
+    return render(request, 'desk_update.html', {'form': form, 'solid_form': solid_form, 'desk_id': desk_id})
+
+
 
 @solid_username_required(['hotdeskadmin'])
 def desk_delete_view(request, desk_id):
@@ -92,38 +101,28 @@ def desk_delete_view(request, desk_id):
     solid_form = SolidCredentialsForm(request.POST or None)
 
     if request.method == 'POST' and solid_form.is_valid():
-      
         solid_data = solid_form.cleaned_data
-        auth = Auth()
+        api = get_solid_api(solid_data['idp'], solid_data['username'], solid_data['password'])
 
         try:
-            # Attempt to log in to the Solid server
-            auth.login(solid_data['idp'], solid_data['username'], solid_data['password'])
-            
-            if auth.is_login:
-                # Define the full URL for the desk's Solid POD file
-                pod_file_url = f"{solid_data['pod_endpoint'].rstrip('/')}/desk{desk.id}.ttl"
+            # Define the full URL for the desk's Solid POD file
+            pod_file_url = f"{solid_data['pod_endpoint'].rstrip('/')}/desk{desk.id}.ttl"
 
-                # Prepare headers with the session cookie
-                headers = {'Cookie': f'nssidp.sid={auth.session_cookie}'}
+            # Attempt to delete the file from the Solid POD
+            api.delete(pod_file_url)
+            print("Desk POD file deleted successfully.")
 
-                # Send a DELETE request to the Solid POD
-                response = httpx.delete(pod_file_url, headers=headers)
-                response.raise_for_status()  # Raises an exception for 4XX/5XX responses
-
-                # If successful, delete the desk from the local database
-                desk.delete()
-                messages.success(request, "Desk deleted successfully.")
-                return redirect('hotdesk:desk-create')  # Redirect to the list of desks
-            else:
-                raise Exception("Login to Solid POD failed.")
-                
+            # If successful, delete the desk from the local database
+            desk.delete()
+            messages.success(request, "Desk deleted successfully.")
+            return redirect('hotdesk:desk-create')  # Redirect to the list of desks
         except httpx.HTTPStatusError as e:
             messages.error(request, f"HTTP error occurred: {e}")
         except Exception as e:
             messages.error(request, f"An error occurred: {e}")
 
     return render(request, 'desk_confirm_delete.html', {'desk': desk, 'solid_form': solid_form})
+
 
 
 def solid_login_view(request):

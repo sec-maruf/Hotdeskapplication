@@ -1,3 +1,4 @@
+# models.py
 from django.db import models
 class Desk(models.Model):
     desk_id = models.CharField(max_length=200)
