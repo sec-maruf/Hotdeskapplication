@@ -11,7 +11,7 @@
     <select id="desk-select" name="desk_id">
         {% for desk in desks %}
             <!-- Set the first desk as selected by default -->
-            <option value="{{ desk.id }}" {% if forloop.first %}selected{% endif %}>{{ desk }}</option>
+            <option value="{{desk.id}}" {% if forloop.first %}selected{% endif %}>{{ desk.desk_id }}</option>
         {% endfor %}
     </select>
     <a id="update-desk" href="#" class="btn btn-primary">Update Desk</a>

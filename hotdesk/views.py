@@ -62,7 +62,7 @@ def desk_update_view(request, desk_id):
     desk = get_object_or_404(Desk, pk=desk_id)
     desk_form = DeskForm(request.POST or None, instance=desk)
     solid_form = SolidCredentialsForm(request.POST or None)
-
+    print(desk)
     if request.method == 'POST':
         if desk_form.is_valid() and solid_form.is_valid():
             updated_desk = desk_form.save(commit=False)
@@ -78,6 +78,7 @@ def desk_update_view(request, desk_id):
                 api.put_file(pod_file_url, turtle_data, 'text/turtle')
                 updated_desk.save()  # Commit the changes to the database
                 messages.success(request, "Desk updated successfully on both local and Solid POD.")
+                
                 return redirect(reverse('hotdesk:desk-detail', kwargs={'desk_id':desk.id}))
             except httpx.HTTPStatusError as e:
                 messages.error(request, "Failed to update desk on Solid POD: " + str(e))
