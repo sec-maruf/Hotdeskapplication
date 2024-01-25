@@ -10,7 +10,8 @@
     <h3>Update or Delete a Desk</h3>
     <select id="desk-select" name="desk_id">
         {% for desk in desks %}
-            <option value="{{ desk.id }}">{{ desk }}</option>
+            <!-- Set the first desk as selected by default -->
+            <option value="{{ desk.id }}" {% if forloop.first %}selected{% endif %}>{{ desk }}</option>
         {% endfor %}
     </select>
     <a id="update-desk" href="#" class="btn btn-primary">Update Desk</a>
@@ -24,11 +25,19 @@
         const updateButton = document.getElementById('update-desk');
         const deleteButton = document.getElementById('delete-desk');
 
-        deskSelect.addEventListener('change', function () {
+        // Function to update the href for the update and delete buttons
+        function updateActionUrls() {
             const deskId = deskSelect.value;
             updateButton.href = `/hotdesk/desk/update/${deskId}/`;
             deleteButton.href = `/hotdesk/desk/delete/${deskId}/`;
-        });
+        }
+
+        // Update URLs when the page loads
+        updateActionUrls();
+
+        // Add change event listener to update URLs when a different desk is selected
+        deskSelect.addEventListener('change', updateActionUrls);
     });
 </script>
 {% endblock %}
+

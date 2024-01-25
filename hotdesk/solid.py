@@ -12,3 +12,6 @@ def get_solid_api(idp, username, password):
     except Exception as e:
         print("Failed to login to Solid POD at:", idp, "Error:", e)  # Print error message
         raise e  # Re-raise the exception to handle it further up the call stack
+    
+
+

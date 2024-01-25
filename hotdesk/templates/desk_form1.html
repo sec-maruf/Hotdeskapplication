@@ -5,13 +5,79 @@
 {% block content %}
 <div class="container">
     <h1>Create New Desk</h1>
+
     <form method="post" action="{% url 'hotdesk:desk-create' %}">
         {% csrf_token %}
-        {{ desk_form.as_p }}
-        {{ solid_form.as_p }}
+        
+        <!-- Desk Info Section -->
+        <fieldset>
+            <legend>Desk Info</legend>
+            {{ desk_form.desk_id.label_tag }} {{ desk_form.desk_id }}
+            <br>
+            <br>
+            {{ desk_form.desk_description.label_tag }} {{ desk_form.desk_description }}
+            <br>
+            <br>
+            {{ desk_form.capacity.label_tag }} {{ desk_form.capacity }}
+            <br>
+            <br>
+            {{ desk_form.location.label_tag }} {{ desk_form.location }}
+            <br>
+            <br>
+            {{ desk_form.availability.label_tag }} {{ desk_form.availability }}
+            <br>
+            <br>
+            {{ desk_form.price.label_tag }} {{ desk_form.price }}
+            <br>
+            <br>
+            <!-- Date-Time Picker Fields -->
+            <label for="start_time">Start Time:</label>
+            <input type="text" name="start_time" id="start_time" class="datetimepicker" required>
+            <br>
+            <br>
+            <label for="end_time">End Time:</label>
+            <input type="text" name="end_time" id="end_time" class="datetimepicker" required>
+            <br>
+            <br>
+</fieldset>
+
+        <!-- Trust Factors Section -->
+        <fieldset>
+            <legend>Trust Factors</legend>
+            {{ desk_form.user_ratings.label_tag }} {{ desk_form.user_ratings }}
+            <br>
+            <br>
+            {{ desk_form.frequency_of_bookings.label_tag }} {{ desk_form.frequency_of_bookings }}
+            <br>
+            <br>
+            {{ desk_form.feedback.label_tag }} {{ desk_form.feedback }}
+            <br>
+            <br>
+            {{ desk_form.accuracy_of_description.label_tag }} {{ desk_form.accuracy_of_description }}
+            <br>
+            <br>
+        </fieldset>
+
+        <!-- Solid Credential Info Section -->
+        <fieldset>
+            <legend>Solid Credential Info</legend>
+            {{ solid_form.as_p }}
+        </fieldset>
+
         <button type="submit" class="btn btn-primary">Create Desk</button>
-        <a href="{% url 'hotdesk:dashboard' %}" class="btn btn-secondary">Cancel</a>
+        <a href="{% url 'hotdesk:dashboard' %}" class="btn btn-secondary">Back</a>
         <a href="{% url 'hotdesk:solid-logout' %}" class="btn btn-secondary">Log Out</a>
     </form>
 </div>
+
+<!-- Include Flatpickr for Date-Time picking functionality -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    flatpickr(".datetimepicker", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+    });
+</script>
+
 {% endblock %}

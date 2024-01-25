@@ -1,0 +1,40 @@
+<!-- solid_file.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Solid File Details</h1>
+
+    <!-- Display error messages -->
+    {% if error_messages %}
+        {% for error_message in error_messages %}
+            <div class="alert alert-danger">
+                {{ error_message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Display all desk details -->
+    {% if all_desk_details %}
+        <div class="desk-details-list">
+            {% for desk in all_desk_details %}
+                <div class="desk-details">
+                    <h3>Desk ID: {{ desk.desk_id }}</h3>
+                    <p><strong>Description:</strong> {{ desk.desk_description }}</p>
+                    <p><strong>Capacity:</strong> {{ desk.capacity }}</p>
+                    <p><strong>Location:</strong> {{ desk.location }}</p>
+                    <p><strong>Availability:</strong> {{ desk.availability }}</p>
+                    <p><strong>Start Time:</strong> {{ desk.start_time }}</p>
+                    <p><strong>End Time:</strong> {{ desk.end_time }}</p>
+                    <p><strong>Price:</strong> {{ desk.price }}</p>
+                    <p><strong>Trust Score:</strong> {{ desk.trust_score }}</p>
+                    <p><strong>Recommendation:</strong> {{ desk.recommendation }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No desk details available.</p>
+    {% endif %}
+</div>
+{% endblock %}

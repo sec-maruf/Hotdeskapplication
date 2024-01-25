@@ -1,0 +1,19 @@
+<!-- base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- head contents like title, CSS links, etc. -->
+</head>
+<body>
+    <nav>
+        <!-- other navigation links -->
+        <a href="{% url 'booking_desk:get-desks' %}">View Desks</a>
+    </nav>
+
+    {% block content %}
+    <!-- Main content gets inserted here -->
+    {% endblock %}
+
+    <!-- Footer, scripts, etc. -->
+</body>
+</html>

@@ -1,41 +1,79 @@
 <!-- desk_update.html -->
+
 {% extends 'base.html' %}
 
 {% block content %}
 <div class="container">
-    <h2>Update Desk</h2>
-
-    <!-- Display form errors -->
-    {% if form.errors %}
-        <div class="alert alert-danger">
-            <strong>Error!</strong> Please correct the following errors:
-            {% for field in form %}
-                {% for error in field.errors %}
-                    <p>{{ error }}</p>
-                {% endfor %}
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    <!-- Display solid_form errors -->
-    {% if solid_form.errors %}
-        <div class="alert alert-danger">
-            <strong>Error!</strong> Please correct the following errors in Solid credentials:
-            {% for field in solid_form %}
-                {% for error in field.errors %}
-                    <p>{{ error }}</p>
-                {% endfor %}
-            {% endfor %}
-        </div>
-    {% endif %}
+    <h1>Update Desk Details</h1>
 
     <form method="post" action="{% url 'hotdesk:desk-update' desk_id=desk_id %}">
         {% csrf_token %}
-        {{ form.as_p }}
-        {{ solid_form.as_p }}
-        <button type="submit" class="btn btn-primary">Update</button>
+
+        <!-- Desk Info Section -->
+        <fieldset>
+            <legend>Desk Info</legend>
+            {{ desk_form.desk_id.label_tag }} {{ desk_form.desk_id }}
+            <br>
+            {{ desk_form.desk_description.label_tag }} {{ desk_form.desk_description }}
+            <br>
+            {{ desk_form.capacity.label_tag }} {{ desk_form.capacity }}
+            <br>
+            {{ desk_form.location.label_tag }} {{ desk_form.location }}
+            <br>
+            {{ desk_form.availability.label_tag }} {{ desk_form.availability }}
+            <br>
+            {{ desk_form.price.label_tag }} {{ desk_form.price }}
+            <br>
+            {{ desk_form.start_time.label_tag }} {{ desk_form.start_time }}
+            <br>
+            {{ desk_form.end_time.label_tag }} {{ desk_form.end_time }}
+            <br>
+        </fieldset>
+
+        <!-- Trust Factors Section -->
+        <fieldset>
+            <legend>Trust Factors</legend>
+            {{ desk_form.user_ratings.label_tag }} {{ desk_form.user_ratings }}
+            <br>
+            {{ desk_form.frequency_of_bookings.label_tag }} {{ desk_form.frequency_of_bookings }}
+            <br>
+            {{ desk_form.feedback.label_tag }} {{ desk_form.feedback }}
+            <br>
+            {{ desk_form.accuracy_of_description.label_tag }} {{ desk_form.accuracy_of_description }}
+            <br>
+        </fieldset>
+
+        <!-- Solid Credential Info Section -->
+        <fieldset>
+            <legend>Solid Credential Info</legend>
+            {{ solid_form.username.label_tag }} {{ solid_form.username }}
+            <br>
+            {{ solid_form.password.label_tag }} {{ solid_form.password }}
+            <br>
+            {{ solid_form.idp.label_tag }} {{ solid_form.idp }}
+            <br>
+            {{ solid_form.pod_endpoint.label_tag }} {{ solid_form.pod_endpoint }}
+            <br>
+        </fieldset>
+
+        <button type="submit" class="btn btn-primary">Update Desk</button>
         <a href="{% url 'hotdesk:dashboard' %}" class="btn btn-secondary">Cancel</a>
-        <a href="{% url 'hotdesk:solid-logout' %}" class="btn btn-secondary">Log Out</a>
     </form>
 </div>
+
+<!-- Include Flatpickr -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    // Apply Flatpickr to the start_time and end_time fields
+    flatpickr("#id_start_time", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+    });
+    flatpickr("#id_end_time", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+    });
+</script>
+
 {% endblock %}
