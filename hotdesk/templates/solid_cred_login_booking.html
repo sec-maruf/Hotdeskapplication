@@ -1,0 +1,31 @@
+<!-- solid_login.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+    <h2>Create book desk</h2>
+    <form method="post" action="{% url 'hotdesk:deskbook' %}">
+        {% csrf_token %}
+        <div class="desk-details">
+            <h3>Desk ID: {{ desk.desk_id }}</h3>
+            <p><strong>Description:</strong> {{ desk.desk_description }}</p>
+            <p><strong>Country:</strong> {{ desk.country }}</p>
+            <p><strong>City:</strong> {{ desk.city_name}}</p>
+            <p><strong>Capacity:</strong> {{ desk.capacity }}</p>
+            <p><strong>Availability:</strong> {{ desk.availability }}</p>
+            <p><strong>Start Time:</strong> {{ desk.start_time }}</p>
+            <p><strong>End Time:</strong> {{ desk.end_time }}</p>
+            <p><strong>Price:</strong> {{ desk.price }}</p>
+            <p><strong>Post code:</strong> {{ desk.post_code }}</p>
+            <p><strong>Desk Quantity:</strong> {{ desk.desk_number }}</p>
+            <p><strong>Ergonomic chair Quantity:</strong> {{ desk.ergonomic_chair_number}}</p>
+            <p><strong>Desk monitor Quantity:</strong> {{ desk.desk_monitor_number}}</p>
+        </div>
+        {{ form.as_p }}
+       
+        <button type="submit" class="btn btn-primary">create book now</button>
+    </form>
+</div>
+{% endblock %}

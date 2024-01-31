@@ -18,10 +18,13 @@
             {{ desk_form.desk_description.label_tag }} {{ desk_form.desk_description }}
             <br>
             <br>
-            {{ desk_form.capacity.label_tag }} {{ desk_form.capacity }}
+            {{ desk_form.country.label_tag }} {{ desk_form.country }}
             <br>
             <br>
-            {{ desk_form.location.label_tag }} {{ desk_form.location }}
+            {{ desk_form.capacity.label_tag }} {{ desk_form.capacity}}
+            <br>
+            <br>
+            {{ desk_form.city_name.label_tag }} {{ desk_form.city_name }}
             <br>
             <br>
             {{ desk_form.availability.label_tag }} {{ desk_form.availability }}
@@ -30,33 +33,26 @@
             {{ desk_form.price.label_tag }} {{ desk_form.price }}
             <br>
             <br>
-            <!-- Date-Time Picker Fields -->
-            <label for="start_time">Start Time:</label>
-            <input type="text" name="start_time" id="start_time" class="datetimepicker" required>
+            {{ desk_form.start_time.label_tag }} {{ desk_form.start_time }}
             <br>
             <br>
-            <label for="end_time">End Time:</label>
-            <input type="text" name="end_time" id="end_time" class="datetimepicker" required>
+            {{ desk_form.end_time.label_tag }} {{ desk_form.end_time }}
+            <br>
+            <br>
+            {{ desk_form.post_code.label_tag }} {{ desk_form.post_code }}
+            <br>
+            <br>
+            {{ desk_form.desk_number.label_tag }} {{ desk_form.desk_number }}
+            <br>
+            <br>
+            {{ desk_form.ergonomic_chair_number.label_tag }} {{ desk_form.ergonomic_chair_number }}
+            <br>
+            <br>
+            {{ desk_form.desk_monitor_number.label_tag }} {{ desk_form.desk_monitor_number }}
             <br>
             <br>
 </fieldset>
 
-        <!-- Trust Factors Section -->
-        <fieldset>
-            <legend>Trust Factors</legend>
-            {{ desk_form.user_ratings.label_tag }} {{ desk_form.user_ratings }}
-            <br>
-            <br>
-            {{ desk_form.frequency_of_bookings.label_tag }} {{ desk_form.frequency_of_bookings }}
-            <br>
-            <br>
-            {{ desk_form.feedback.label_tag }} {{ desk_form.feedback }}
-            <br>
-            <br>
-            {{ desk_form.accuracy_of_description.label_tag }} {{ desk_form.accuracy_of_description }}
-            <br>
-            <br>
-        </fieldset>
 
         <!-- Solid Credential Info Section -->
         <fieldset>
@@ -70,11 +66,16 @@
     </form>
 </div>
 
-<!-- Include Flatpickr for Date-Time picking functionality -->
+<!-- Include Flatpickr -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-    flatpickr(".datetimepicker", {
+    // Apply Flatpickr to the start_time and end_time fields
+    flatpickr("#id_start_time", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+    });
+    flatpickr("#id_end_time", {
         enableTime: true,
         dateFormat: "Y-m-d H:i",
     });

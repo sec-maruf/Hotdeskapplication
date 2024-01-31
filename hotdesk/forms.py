@@ -2,22 +2,40 @@
 from django import forms
 from .models import Desk
 
+CITY_CHOICES = [
+    ('essen', 'Essen'),
+    ('berlin', 'Berlin'),
+    ('munich', 'Munich'),
+    ('düsseldorf', 'Düsseldorf'),
+    ('köln', 'Köln'),
+    ('bamberg', 'Bamberg'),
+    ('potsdam', 'Potsdam'),
+    ('frankfurt', 'Frankfurt'),
+    
+]
+
 class DeskForm(forms.ModelForm):
+    city_name = forms.ChoiceField(choices=CITY_CHOICES, required=True, label='City')
+    post_code = forms.CharField(max_length=5, required=True)
+    desk_description = forms.CharField(required=False)
+    start_time = forms.DateTimeField(required=False, widget=forms.DateTimeInput(format='%Y-%m-%d %H:%M'))
+    end_time = forms.DateTimeField(required=False, widget=forms.DateTimeInput(format='%Y-%m-%d %H:%M'))
     class Meta:
         model = Desk
         fields = [
             'desk_id', 
-            'desk_description', 
+            'desk_description',
             'capacity', 
-            'location', 
+            'country', 
+            'city_name', 
             'availability', 
             'start_time', 
             'end_time', 
             'price', 
-            'user_ratings', 
-            'frequency_of_bookings', 
-            'feedback', 
-            'accuracy_of_description'
+            'post_code', 
+            'desk_number', 
+            'ergonomic_chair_number', 
+            'desk_monitor_number'
         ]
 
 

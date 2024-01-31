@@ -3,7 +3,7 @@
 from django.shortcuts import get_object_or_404, render, redirect
 import httpx
 
-from hotdesk.trust_awareness_calculation import calculate_trust_score_and_sort
+#from hotdesk.trust_awareness_calculation import calculate_trust_score_and_sort
 from .models import Desk
 from .forms import DeskForm, SolidCredentialsForm
 
@@ -16,7 +16,7 @@ from django.urls import reverse
 import logging
 from django.contrib import messages
 from .decorators import solid_username_required
-
+from .trust_awareness_calculation import  trust_filter_capacity, trust_filter_country, trust_filter_desk_amenity, trust_filter_desk_description, trust_filter_desk_timedetails, trust_filter_postcode
 
 
 logger = logging.getLogger(__name__)
@@ -163,47 +163,6 @@ def dashboard_view(request):
     return render(request, 'dashboard.html', {'desks': desks})
 
 
-# views.py
-
-from django.shortcuts import render
-from .solid import SolidAPI, Auth  # Ensure to import your SolidAPI and Auth classes
-from httpx import HTTPStatusError
-
-""" def solid_file_view(request):
-    auth = Auth()  # Configure this with the correct credentials
-    solid_api_instance = SolidAPI(auth=auth)
-
-    file_urls = ["https://desk1.solidcommunity.net/desk1.ttl", "https://desk2.solidcommunity.net/desk2.ttl", 
-                 "https://desk3.solidcommunity.net/desk3.ttl", "https://desk4.solidcommunity.net/desk4.ttl", 
-                 "https://desk5.solidcommunity.net/desk5.ttl", "https://desk6.solidcommunity.net/desk6.ttl", 
-                 "https://desk7.solidcommunity.net/desk7.ttl", "https://desk8.solidcommunity.net/desk8.ttl", 
-                 "https://desk9.solidcommunity.net/desk9.ttl", "https://desk10.solidcommunity.net/desk10.ttl" 
-                 
-                 ]
-    all_desk_details = []
-    error_messages = []
-
-
-    for file_url in file_urls:
-        try:
-            response = solid_api_instance.get(file_url)
-            turtle_content = response.text
-            desk_details = parse_turtle_content(turtle_content)
-            all_desk_details.extend(desk_details)
-         
-        except HTTPStatusError as e:
-            error_message = f"HTTP Error for {file_url}: {e.response.status_code} - {e.response.text}"
-            error_messages.append(error_message)
-        except Exception as e:
-            error_message = f"An unexpected error occurred for {file_url}: {str(e)}"
-            error_messages.append(error_message)
-        print(desk_details[0].get("desk_id"))    
-
-    return render(request, 'solid_file.html', {
-        'all_desk_details': all_desk_details,
-        'error_messages': error_messages
-    })
- """
     
 def solid_login_view(request):
     if request.method == 'POST':
@@ -254,13 +213,7 @@ def solid_file_view(request):
     auth = Auth()  # Configure this with the correct credentials
     solid_api_instance = SolidAPI(auth=auth)
 
-    file_urls = ["https://desk1.solidcommunity.net/desk1.ttl", "https://desk2.solidcommunity.net/desk2.ttl", 
-                 "https://desk3.solidcommunity.net/desk3.ttl", "https://desk4.solidcommunity.net/desk4.ttl", 
-                 "https://desk5.solidcommunity.net/desk5.ttl", "https://desk6.solidcommunity.net/desk6.ttl", 
-                 "https://desk7.solidcommunity.net/desk7.ttl", "https://desk8.solidcommunity.net/desk8.ttl", 
-                 "https://desk9.solidcommunity.net/desk9.ttl", "https://desk10.solidcommunity.net/desk10.ttl" 
-                 
-                 ]
+    file_urls = ["https://desk1.solidcommunity.net/desk2.ttl","https://desk1.solidcommunity.net/desk5.ttl","https://desk1.solidcommunity.net/desk6.ttl"]
     all_desk_details = []
     error_messages = []
 
@@ -270,27 +223,61 @@ def solid_file_view(request):
             turtle_content = response.text
             desk_details = parse_turtle_content(turtle_content)
             all_desk_details.extend(desk_details)
+            request.session['all_desk_details'] = all_desk_details  # Store in session
+            request.session.save()
         except HTTPStatusError as e:
             error_messages.append(f"HTTP Error for {file_url}: {e.response.status_code} - {e.response.text}")
         except Exception as e:
             error_messages.append(f"An unexpected error occurred for {file_url}: {str(e)}")
 
-    # Define trust factors
-    trust_factors = {
-        "user_ratings": 0.4,
-        "frequency_of_bookings": 0.3,
-        "feedback": 0.2,
-        "accuracy_of_description": 0.1
-    }
-
     # Sort desks by trust score
-    sorted_desks = calculate_trust_score_and_sort(all_desk_details, trust_factors)
-
+    #sorted_desks = calculate_trust_score_and_sort(all_desk_details, trust_factors)
+    trust_status_desks = trust_filter_desk_amenity(all_desk_details)
+    trust_status_country= trust_filter_country(all_desk_details)
+    trust_status_capacity= trust_filter_capacity(all_desk_details)
+    trust_status_city_postcode= trust_filter_postcode(all_desk_details)
+    trust_status_description= trust_filter_desk_description(all_desk_details)
+    trust_status_timedetails= trust_filter_desk_timedetails(all_desk_details)
+    
     return render(request, 'solid_file.html', {
-        'all_desk_details': sorted_desks,
-        'error_messages': error_messages
+        'all_desk_details': trust_status_desks,'all_desk_details':trust_status_country, 'all_desk_details':trust_status_capacity,
+       'all_desk_details': trust_status_city_postcode,'all_desk_details': trust_status_description, 
+       'all_desk_details': trust_status_timedetails,'error_messages': error_messages
     })
 
 
 
 
+##################
+def deskbook(request):
+   
+    book_solid_form = SolidCredentialsForm(request.POST or None)
+    desk_id = request.GET.get('desk_id') or request.POST.get('desk_id')
+   
+
+
+    desk = None
+
+    if desk_id:
+        desk = get_object_or_404(Desk, desk_id=desk_id)
+    if request.method == 'POST':
+        if book_solid_form.is_valid():
+            # Use form.cleaned_data to access the form data safely
+            solid_username = book_solid_form.cleaned_data.get('username')
+            solid_password = book_solid_form.cleaned_data.get('password')
+            solid_idp= book_solid_form.cleaned_data.get('idp')
+            solid_pod_endpoint= book_solid_form.cleaned_data.get('pod_endpoint')
+
+
+            # Store the credentials in the session or use them as needed
+            request.session['solid_credentials'] = {
+                'username': solid_username,
+                'password': solid_password,
+                'idp':solid_idp,
+                'pod_endpoint': solid_pod_endpoint
+            }
+            return redirect('hotdesk:dashboard')
+    else:
+        book_solid_form = SolidCredentialsForm()
+
+    return render(request, 'solid_cred_login_booking.html', {'form': book_solid_form,'desk': desk})

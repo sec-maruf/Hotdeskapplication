@@ -22,14 +22,25 @@
                 <div class="desk-details">
                     <h3>Desk ID: {{ desk.desk_id }}</h3>
                     <p><strong>Description:</strong> {{ desk.desk_description }}</p>
+                    <p><strong>Country:</strong> {{ desk.country }}</p>
+                    <p><strong>City:</strong> {{ desk.city_name}}</p>
                     <p><strong>Capacity:</strong> {{ desk.capacity }}</p>
-                    <p><strong>Location:</strong> {{ desk.location }}</p>
                     <p><strong>Availability:</strong> {{ desk.availability }}</p>
                     <p><strong>Start Time:</strong> {{ desk.start_time }}</p>
                     <p><strong>End Time:</strong> {{ desk.end_time }}</p>
                     <p><strong>Price:</strong> {{ desk.price }}</p>
-                    <p><strong>Trust Score:</strong> {{ desk.trust_score }}</p>
-                    <p><strong>Recommendation:</strong> {{ desk.recommendation }}</p>
+                    <p><strong>Post code:</strong> {{ desk.post_code }}</p>
+                    <p><strong>Desk Quantity:</strong> {{ desk.desk_number }}</p>
+                    <p><strong>Ergonomic chair Quantity:</strong> {{ desk.ergonomic_chair_number}}</p>
+                    <p><strong>Desk monitor Quantity:</strong> {{ desk.desk_monitor_number}}</p>
+                    <p><strong>Trust-aware decision for desk amenity:</strong> {{ desk.trust_status}}</p>
+                    <p><strong>Trust-aware decision for country:</strong> {{ desk.trust_status_Country}}</p>
+                    <p><strong>Trust-aware decision of capacity info:</strong> {{ desk.trust_status_capacity}}</p>
+                    <p><strong>Trust-aware decision of City's postcode:</strong> {{ desk.trust_status_postcode}}</p>
+                    <p><strong>Trust-aware decision of desk's description:</strong> {{ desk.trust_status_for_description}}</p>
+                    <p><strong>Trust-aware decision of desk's time details:</strong> {{ desk.trust_status_for_timedetails}}</p>
+        
+                    <a href="{% url 'hotdesk:deskbook' %}?desk_id={{ desk.desk_id }}" class="btn btn-primary">Book</a>
                 </div>
             {% endfor %}
         </div>

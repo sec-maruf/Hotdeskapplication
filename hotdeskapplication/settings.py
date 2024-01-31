@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'hotdesk',
-    'booking_desk'
 ]
 
 MIDDLEWARE = [
@@ -141,3 +140,5 @@ LOGGING = {
         },
     },
 }
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
