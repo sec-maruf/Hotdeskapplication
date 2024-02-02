@@ -39,6 +39,7 @@
                     <p><strong>Trust-aware decision of City's postcode:</strong> {{ desk.trust_status_postcode}}</p>
                     <p><strong>Trust-aware decision of desk's description:</strong> {{ desk.trust_status_for_description}}</p>
                     <p><strong>Trust-aware decision of desk's time details:</strong> {{ desk.trust_status_for_timedetails}}</p>
+                    <p><strong>Trust-aware decision of desk's price for city:</strong> {{ desk.trust_status_price}}</p>
         
                     <a href="{% url 'hotdesk:deskbook' %}?desk_id={{ desk.desk_id }}" class="btn btn-primary">Book</a>
                 </div>

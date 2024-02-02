@@ -1,5 +1,7 @@
 # views.py
 
+import datetime
+from uuid import uuid4
 from django.shortcuts import get_object_or_404, render, redirect
 import httpx
 
@@ -16,7 +18,7 @@ from django.urls import reverse
 import logging
 from django.contrib import messages
 from .decorators import solid_username_required
-from .trust_awareness_calculation import  trust_filter_capacity, trust_filter_country, trust_filter_desk_amenity, trust_filter_desk_description, trust_filter_desk_timedetails, trust_filter_postcode
+from .trust_awareness_calculation import  trust_filter_capacity, trust_filter_country, trust_filter_desk_amenity, trust_filter_desk_description, trust_filter_desk_timedetails, trust_filter_postcode, trust_filter_price_for_city
 
 
 logger = logging.getLogger(__name__)
@@ -62,7 +64,6 @@ def desk_update_view(request, desk_id):
     desk = get_object_or_404(Desk, pk=desk_id)
     desk_form = DeskForm(request.POST or None, instance=desk)
     solid_form = SolidCredentialsForm(request.POST or None)
-    print(desk)
     if request.method == 'POST':
         if desk_form.is_valid() and solid_form.is_valid():
             updated_desk = desk_form.save(commit=False)
@@ -213,7 +214,9 @@ def solid_file_view(request):
     auth = Auth()  # Configure this with the correct credentials
     solid_api_instance = SolidAPI(auth=auth)
 
-    file_urls = ["https://desk1.solidcommunity.net/desk2.ttl","https://desk1.solidcommunity.net/desk5.ttl","https://desk1.solidcommunity.net/desk6.ttl"]
+    file_urls = ["https://desk1.solidcommunity.net/desk2.ttl","https://desk1.solidcommunity.net/desk5.ttl",
+                 "https://desk1.solidcommunity.net/desk6.ttl",
+                 "https://desk1.solidcommunity.net/desk8.ttl","https://desk1.solidcommunity.net/desk9.ttl"]
     all_desk_details = []
     error_messages = []
 
@@ -238,11 +241,12 @@ def solid_file_view(request):
     trust_status_city_postcode= trust_filter_postcode(all_desk_details)
     trust_status_description= trust_filter_desk_description(all_desk_details)
     trust_status_timedetails= trust_filter_desk_timedetails(all_desk_details)
+    trust_status_price_for_city = trust_filter_price_for_city(all_desk_details)
     
     return render(request, 'solid_file.html', {
         'all_desk_details': trust_status_desks,'all_desk_details':trust_status_country, 'all_desk_details':trust_status_capacity,
        'all_desk_details': trust_status_city_postcode,'all_desk_details': trust_status_description, 
-       'all_desk_details': trust_status_timedetails,'error_messages': error_messages
+       'all_desk_details': trust_status_timedetails,'all_desk_details': trust_status_price_for_city,'error_messages': error_messages
     })
 
 
@@ -250,34 +254,49 @@ def solid_file_view(request):
 
 ##################
 def deskbook(request):
-   
+    desk_id = request.POST.get('desk_id') or request.GET.get('desk_id')
+
+    if not desk_id:
+        messages.error(request, "No desk ID provided.")
+        return redirect('hotdesk:solid-file')
+
+    desk = get_object_or_404(Desk, desk_id=desk_id)
+    print(desk.start_time, desk.end_time)
+    book_desk_form = DeskForm(request.POST or None, instance=desk)
     book_solid_form = SolidCredentialsForm(request.POST or None)
-    desk_id = request.GET.get('desk_id') or request.POST.get('desk_id')
    
 
-
-    desk = None
-
-    if desk_id:
-        desk = get_object_or_404(Desk, desk_id=desk_id)
     if request.method == 'POST':
-        if book_solid_form.is_valid():
-            # Use form.cleaned_data to access the form data safely
-            solid_username = book_solid_form.cleaned_data.get('username')
-            solid_password = book_solid_form.cleaned_data.get('password')
-            solid_idp= book_solid_form.cleaned_data.get('idp')
-            solid_pod_endpoint= book_solid_form.cleaned_data.get('pod_endpoint')
+        if book_desk_form.is_valid() and book_solid_form.is_valid():
+            desk = book_desk_form.save()
+            solid_data = book_solid_form.cleaned_data
+            # Serialize the desk object to Turtle format
+            turtle_data = desk_to_rdf(desk).serialize(format="turtle").decode("utf-8")
+        
+            
+            try:
+                api = get_solid_api(solid_data['idp'], solid_data['username'], solid_data['password'])
+                pod_file_url = f"{solid_data['pod_endpoint'].rstrip('/')}/booking{desk.desk_id}.ttl"
 
+                response = api.create_file(pod_file_url, turtle_data, 'text/turtle')
+                if response.status_code == 201:
+                    print("Attempting to redirect to booking confirmation")
+                    messages.success(request, "Book POD file created successfully.")
+                    return redirect('hotdesk:booking_confirmation', desk_id=desk.desk_id)
+                    
+                else:
+                    messages.error(request, f"Unexpected response from server: {response.status_code} - {response.content}")
+                
+            except Exception as e:
+                messages.error(request, f"Error during Solid POD interaction: {e}")
+        else:
+            print("Desk Form Errors:", book_desk_form.errors)
+            print("Solid Form Errors:", book_solid_form.errors)
+            messages.error(request, "Form validation failed")
 
-            # Store the credentials in the session or use them as needed
-            request.session['solid_credentials'] = {
-                'username': solid_username,
-                'password': solid_password,
-                'idp':solid_idp,
-                'pod_endpoint': solid_pod_endpoint
-            }
-            return redirect('hotdesk:dashboard')
-    else:
-        book_solid_form = SolidCredentialsForm()
+    return render(request, 'solid_cred_login_booking.html', {'book_desk_form': book_desk_form,'book_solid_form': book_solid_form,  'desk': desk})
 
-    return render(request, 'solid_cred_login_booking.html', {'form': book_solid_form,'desk': desk})
+def booking_confirmation(request, desk_id):
+    desk = get_object_or_404(Desk, desk_id=desk_id)
+    return render(request, 'booking_confirmation.html', {'desk': desk})
+

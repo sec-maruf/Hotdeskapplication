@@ -51,14 +51,14 @@ def trust_filter_postcode(desks):
     }
 
     for desk in desks:
-        city = desk['city_name']
+        city = desk['city_name'].lower()
         postcode = desk['post_code']
 
         # Check if the city is in the mapping and if the postcode matches the expected format
         if city in city_postcode_mapping and postcode.startswith(city_postcode_mapping[city]):
-            desk['trust_status_postcode'] = "Trusted! Postcode matches the expected format for " + city
+            desk['trust_status_postcode'] = "Trusted! Postcode matches the expected format for " + city.capitalize()
         else:
-            desk['trust_status_postcode'] = "Untrusted! Postcode does not match the expected format for " + city
+            desk['trust_status_postcode'] = "Untrusted! Postcode does not match the expected format for " + city.capitalize()
 
     return desks
 
@@ -77,4 +77,33 @@ def trust_filter_desk_timedetails(desks):
             desk['trust_status_for_timedetails'] = "Untrusted! The desk has no proper time details of availability."
         else:
             desk['trust_status_for_timedetails'] = "Trusted! The desk has proper time details of availability."
+    return desks
+
+
+
+def trust_filter_price_for_city(desks):
+    city_price_mapping = {
+        'essen': 50,
+        'frankfurt': 100,
+        'berlin': 200,
+        'düsseldorf': 150,
+        'munich': 300,
+        'köln': 250,
+        'bamberg': 30,
+        'potsdam': 60,
+    }
+
+    for desk in desks:
+        city = desk['city_name'].lower()  # Ensure city names are compared in lowercase
+        price = float(desk['price'])  # Convert price to float for comparison
+
+        # Check if the price is trusted for the city
+        if city in city_price_mapping:
+            if price >= city_price_mapping[city]:
+                desk['trust_status_price'] = "Trusted! The price is appropriate for " + city.capitalize()
+            else:
+                desk['trust_status_price'] = "Untrusted! The price is too low for " + city.capitalize()
+        else:
+            desk['trust_status_price'] = "No price standard for " + city.capitalize()
+
     return desks

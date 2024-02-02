@@ -21,10 +21,7 @@ def desk_to_rdf(desk: Desk) -> Graph:
     graph.add((desk_uri, EX.capacity, Literal(desk.capacity, datatype=XSD.integer)))
     graph.add((desk_uri, EX.country, Literal(desk.country, datatype=XSD.integer)))
     graph.add((desk_uri, EX.city_name, Literal(desk.city_name, datatype=XSD.integer)))
-   # graph.add((desk_uri, EX.location, Literal(desk.location, datatype=XSD.string)))
     graph.add((desk_uri, EX.availability, Literal(desk.availability, datatype=XSD.boolean)))
-    #graph.add((desk_uri, EX.start_time, Literal(desk.start_time.isoformat(), datatype=XSD.dateTime)))
-   # graph.add((desk_uri, EX.end_time, Literal(desk.end_time.isoformat(), datatype=XSD.dateTime)))
     
     if desk.start_time:
         graph.add((desk_uri, EX.start_time, Literal(desk.start_time.isoformat(), datatype=XSD.dateTime)))

@@ -1,31 +1,69 @@
-<!-- solid_login.html -->
-
-{% extends 'base.html' %}
-
 {% block content %}
-
 <div class="container">
-    <h2>Create book desk</h2>
+    <h2>Create Book Desk</h2>
     <form method="post" action="{% url 'hotdesk:deskbook' %}">
         {% csrf_token %}
-        <div class="desk-details">
-            <h3>Desk ID: {{ desk.desk_id }}</h3>
-            <p><strong>Description:</strong> {{ desk.desk_description }}</p>
-            <p><strong>Country:</strong> {{ desk.country }}</p>
-            <p><strong>City:</strong> {{ desk.city_name}}</p>
-            <p><strong>Capacity:</strong> {{ desk.capacity }}</p>
-            <p><strong>Availability:</strong> {{ desk.availability }}</p>
-            <p><strong>Start Time:</strong> {{ desk.start_time }}</p>
-            <p><strong>End Time:</strong> {{ desk.end_time }}</p>
-            <p><strong>Price:</strong> {{ desk.price }}</p>
-            <p><strong>Post code:</strong> {{ desk.post_code }}</p>
-            <p><strong>Desk Quantity:</strong> {{ desk.desk_number }}</p>
-            <p><strong>Ergonomic chair Quantity:</strong> {{ desk.ergonomic_chair_number}}</p>
-            <p><strong>Desk monitor Quantity:</strong> {{ desk.desk_monitor_number}}</p>
-        </div>
-        {{ form.as_p }}
-       
-        <button type="submit" class="btn btn-primary">create book now</button>
+        <input type="hidden" name="desk_id" value="{{ desk.desk_id }}">
+
+        <!-- Desk Form Fields -->
+        <fieldset>
+            <legend>Desk Information</legend>
+            <table>
+                <tr>
+                    <td><label for="desk_description">Description:</label></td>
+                    <td><input id="desk_description" name="desk_description" value="{{ desk.desk_description }}" readonly></td>
+                </tr>
+                <tr>
+                    <td><label for="capacity">Capacity:</label></td>
+                    <td><input id="capacity" name="capacity" type="number" value="{{ desk.capacity }}" readonly></td>
+                </tr>
+                <tr>
+                    <td><label for="country">Country:</label></td>
+                    <td><input id="country" name="country" type="text" value="{{ desk.country }}" readonly></td>
+                </tr>
+                <tr>
+                    <td><label for="city_name">City Name:</label></td>
+                    <td><input id="city_name" name="city_name" type="text" value="{{ desk.city_name }}" readonly></td>
+                </tr>
+                <tr>
+                    <td><label for="price">Price:</label></td>
+                    <td><input id="price" name="price" type="number" value="{{ desk.price }}" readonly></td>
+                </tr>
+                <tr>
+                    <td><label for="post_code">Post Code:</label></td>
+                    <td><input id="post_code" name="post_code" type="text" value="{{ desk.post_code }}" readonly></td>
+                    
+                </tr>
+                <tr>
+                    <td><label for="desk_number">Desk Number:</label></td>
+                    <td><input id="desk_number" name="desk_number" type="number" value="{{ desk.desk_number }}"></td>
+                </tr>
+                <tr>
+                    <td><label for="ergonomic_chair_number">Ergonomic Chair Number:</label></td>
+                    <td><input id="ergonomic_chair_number" name="ergonomic_chair_number" type="number" value="{{ desk.ergonomic_chair_number }}" readonly></td>
+                </tr>
+                <tr>
+                    <td><label for="desk_monitor_number">Desk Monitor Number:</label></td>
+                    <td><input id="desk_monitor_number" name="desk_monitor_number" type="number" value="{{ desk.desk_monitor_number }}" readonly></td>
+                </tr>
+                <tr>
+                    <td><label for="start_time">Start Time:</label></td>
+                    <td><input id="start_time" name="start_time" type="text" value="{{ desk.start_time|date:'Y-m-d H:i' }}" readonly></td>
+                </tr>
+                <tr>
+                    <td><label for="end_time">End Time:</label></td>
+                    <td><input id="end_time" name="end_time" type="text" value="{{ desk.end_time|date:'Y-m-d H:i' }}" readonly></td>
+                </tr>
+            </table>
+        </fieldset>
+
+        <!-- Solid Credentials Form -->
+        <fieldset>
+            <legend>Solid Credentials</legend>
+            {{ book_solid_form.as_p }}
+        </fieldset>
+        
+        <button  type="submit">Create Book Now</button> 
     </form>
 </div>
 {% endblock %}

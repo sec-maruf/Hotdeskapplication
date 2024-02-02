@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Booking Confirmation</h2>
+    <div class="booking-details">
+        <h3>Your booking has been successfully created!</h3>
+        <p><strong>Description:</strong> {{ desk.desk_description }}</p>
+        <p><strong>Country:</strong> {{ desk.country }}</p>
+        <p><strong>City:</strong> {{ desk.city_name }}</p>
+        <p><strong>Capacity:</strong> {{ desk.capacity }}</p>
+        <p><strong>Availability:</strong> {{ desk.availability }}</p>
+        <p><strong>Start Time:</strong> {{ desk.start_time }}</p>
+        <p><strong>End Time:</strong> {{ desk.end_time }}</p>
+        <p><strong>Price:</strong> {{ desk.price }}</p>
+        <p><strong>Post Code:</strong> {{ desk.post_code }}</p>
+        <p><strong>Desk Number:</strong> {{ desk.desk_number }}</p>
+        <p><strong>Ergonomic Chair Quantity:</strong> {{ desk.ergonomic_chair_number }}</p>
+        <p><strong>Desk Monitor Quantity:</strong> {{ desk.desk_monitor_number }}</p>
+    </div>
+    <a href="{% url 'hotdesk:solid-file' %}">Return to desks info</a>
+</div>
+{% endblock %}
