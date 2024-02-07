@@ -201,10 +201,6 @@ def dashboard_view(request):
 
 # views.py
 
-
-
-
-
 from django.shortcuts import render
 from .solid import SolidAPI, Auth  # Ensure to import your SolidAPI and Auth classes
 from httpx import HTTPStatusError
@@ -214,25 +210,26 @@ def solid_file_view(request):
     auth = Auth()  # Configure this with the correct credentials
     solid_api_instance = SolidAPI(auth=auth)
 
-    file_urls = ["https://desk1.solidcommunity.net/desk2.ttl","https://desk1.solidcommunity.net/desk5.ttl",
-                 "https://desk1.solidcommunity.net/desk6.ttl",
-                 "https://desk1.solidcommunity.net/desk8.ttl","https://desk1.solidcommunity.net/desk9.ttl"]
+    file_urls = ["https://desk1.solidcommunity.net/desk7.ttl","https://desk1.solidcommunity.net/desk8.ttl",]
     all_desk_details = []
     error_messages = []
-
+    booked_desk_ids = get_booked_desk_ids()
     for file_url in file_urls:
         try:
             response = solid_api_instance.get(file_url)
             turtle_content = response.text
             desk_details = parse_turtle_content(turtle_content)
+            for desk_detail in desk_details:
+                desk_id = desk_detail.get('desk_id')
+                desk_detail['is_booked'] = desk_id in booked_desk_ids
             all_desk_details.extend(desk_details)
+            
             request.session['all_desk_details'] = all_desk_details  # Store in session
             request.session.save()
         except HTTPStatusError as e:
             error_messages.append(f"HTTP Error for {file_url}: {e.response.status_code} - {e.response.text}")
         except Exception as e:
             error_messages.append(f"An unexpected error occurred for {file_url}: {str(e)}")
-
     # Sort desks by trust score
     #sorted_desks = calculate_trust_score_and_sort(all_desk_details, trust_factors)
     trust_status_desks = trust_filter_desk_amenity(all_desk_details)
@@ -247,12 +244,9 @@ def solid_file_view(request):
         'all_desk_details': trust_status_desks,'all_desk_details':trust_status_country, 'all_desk_details':trust_status_capacity,
        'all_desk_details': trust_status_city_postcode,'all_desk_details': trust_status_description, 
        'all_desk_details': trust_status_timedetails,'all_desk_details': trust_status_price_for_city,'error_messages': error_messages
-    })
+    }) 
 
 
-
-
-##################
 def deskbook(request):
     desk_id = request.POST.get('desk_id') or request.GET.get('desk_id')
 
@@ -261,10 +255,11 @@ def deskbook(request):
         return redirect('hotdesk:solid-file')
 
     desk = get_object_or_404(Desk, desk_id=desk_id)
-    print(desk.start_time, desk.end_time)
     book_desk_form = DeskForm(request.POST or None, instance=desk)
     book_solid_form = SolidCredentialsForm(request.POST or None)
-   
+    if desk.is_booked:
+        messages.error(request, "This desk is already booked.")
+        return redirect('hotdesk:solid-file')
 
     if request.method == 'POST':
         if book_desk_form.is_valid() and book_solid_form.is_valid():
@@ -280,7 +275,9 @@ def deskbook(request):
 
                 response = api.create_file(pod_file_url, turtle_data, 'text/turtle')
                 if response.status_code == 201:
-                    print("Attempting to redirect to booking confirmation")
+                    #print("Attempting to redirect to booking confirmation")
+                    desk.is_booked = True
+                    desk.save()
                     messages.success(request, "Book POD file created successfully.")
                     return redirect('hotdesk:booking_confirmation', desk_id=desk.desk_id)
                     
@@ -300,3 +297,16 @@ def booking_confirmation(request, desk_id):
     desk = get_object_or_404(Desk, desk_id=desk_id)
     return render(request, 'booking_confirmation.html', {'desk': desk})
 
+
+def get_booked_desk_ids():
+    """
+    Fetches and returns a list of desk IDs for desks that are currently booked.
+
+    Returns:
+        list of str: A list of booked desk IDs.
+    """
+    # Query the Desk model for desks that are booked
+    booked_desks = Desk.objects.filter(is_booked=True)
+    # Extract the desk_id of each booked desk and return it as a list
+    booked_desk_ids = [desk.desk_id for desk in booked_desks]
+    return booked_desk_ids

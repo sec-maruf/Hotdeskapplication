@@ -28,7 +28,6 @@ class DeskForm(forms.ModelForm):
             'capacity', 
             'country', 
             'city_name', 
-            'availability', 
             'start_time', 
             'end_time', 
             'price', 

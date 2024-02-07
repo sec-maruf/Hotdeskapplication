@@ -21,7 +21,6 @@ def desk_to_rdf(desk: Desk) -> Graph:
     graph.add((desk_uri, EX.capacity, Literal(desk.capacity, datatype=XSD.integer)))
     graph.add((desk_uri, EX.country, Literal(desk.country, datatype=XSD.integer)))
     graph.add((desk_uri, EX.city_name, Literal(desk.city_name, datatype=XSD.integer)))
-    graph.add((desk_uri, EX.availability, Literal(desk.availability, datatype=XSD.boolean)))
     
     if desk.start_time:
         graph.add((desk_uri, EX.start_time, Literal(desk.start_time.isoformat(), datatype=XSD.dateTime)))
@@ -51,7 +50,6 @@ def parse_turtle_content(turtle_content):
             'country': str(g.value(desk_uri, EX.country, default="")),
             'capacity': str(g.value(desk_uri, EX.capacity, default="")),
             'city_name': str(g.value(desk_uri, EX.city_name, default="")),
-            'availability': str(g.value(desk_uri, EX.availability, default="")),
             'start_time': str(g.value(desk_uri, EX.start_time, default="")),
             'end_time': str(g.value(desk_uri, EX.end_time, default="")),
             'price': str(g.value(desk_uri, EX.price, default="")),

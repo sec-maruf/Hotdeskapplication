@@ -25,7 +25,6 @@
                     <p><strong>Country:</strong> {{ desk.country }}</p>
                     <p><strong>City:</strong> {{ desk.city_name}}</p>
                     <p><strong>Capacity:</strong> {{ desk.capacity }}</p>
-                    <p><strong>Availability:</strong> {{ desk.availability }}</p>
                     <p><strong>Start Time:</strong> {{ desk.start_time }}</p>
                     <p><strong>End Time:</strong> {{ desk.end_time }}</p>
                     <p><strong>Price:</strong> {{ desk.price }}</p>
@@ -40,8 +39,12 @@
                     <p><strong>Trust-aware decision of desk's description:</strong> {{ desk.trust_status_for_description}}</p>
                     <p><strong>Trust-aware decision of desk's time details:</strong> {{ desk.trust_status_for_timedetails}}</p>
                     <p><strong>Trust-aware decision of desk's price for city:</strong> {{ desk.trust_status_price}}</p>
-        
-                    <a href="{% url 'hotdesk:deskbook' %}?desk_id={{ desk.desk_id }}" class="btn btn-primary">Book</a>
+            
+                    <div class="booking-btn-container"
+                         data-book-url="{% url 'hotdesk:deskbook' %}?desk_id={{ desk.desk_id }}"
+                         data-is-booked="{{ desk.is_booked }}">
+                        <!-- Button will be inserted here by JavaScript -->
+                    </div>
                 </div>
             {% endfor %}
         </div>
@@ -49,4 +52,33 @@
         <p>No desk details available.</p>
     {% endif %}
 </div>
-{% endblock %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const bookingBtnContainers = document.querySelectorAll('.booking-btn-container');
+    
+        bookingBtnContainers.forEach(container => {
+            const isBooked = container.getAttribute('data-is-booked') === 'True';
+            const bookUrl = container.getAttribute('data-book-url');
+    
+            if (!isBooked) {
+                const button = document.createElement('button');
+                button.className = 'btn btn-primary';
+                button.textContent = 'Book';
+                button.addEventListener('click', function() {
+                    window.location.href = bookUrl;
+                });
+                container.appendChild(button);
+            } else {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'btn btn-secondary';
+                button.textContent = 'Booked';
+                button.disabled = true;
+                container.appendChild(button);
+            }
+        });
+    });
+    </script>
+    
+    {% endblock %}

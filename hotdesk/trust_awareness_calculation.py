@@ -3,7 +3,7 @@ def trust_filter_desk_amenity(desks):
         if desk['desk_number'] == desk['ergonomic_chair_number'] and desk['desk_monitor_number'] == desk['ergonomic_chair_number']:
             desk['trust_status'] = "Trusted desk! Desk amenities is properly distributed "
         else:
-            desk['trust_status'] = "Desk amenities is not properly distributed"  
+            desk['trust_status'] = "Untrusted desk!Desk amenities is not properly distributed"  
     return desks
               
             

@@ -12,7 +12,6 @@
             <h5 class="card-title">Desk ID: {{ desk.desk_id }}</h5>
             <p class="card-text">City: {{ desk.city_name }}</p>
             <p class="card-text">Country: {{ desk.country }}</p>
-            <p class="card-text">Availability: {{ desk.availability|yesno:"Available,Not Available" }}</p>
             <a href="{% url 'hotdesk:dashboard' %}" class="btn btn-secondary">Back</a>
             <a href="{% url 'hotdesk:solid-logout' %}" class="btn btn-secondary">Log Out</a>
         </div>
