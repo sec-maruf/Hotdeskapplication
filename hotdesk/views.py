@@ -18,7 +18,7 @@ from django.urls import reverse
 import logging
 from django.contrib import messages
 from .decorators import solid_username_required
-from .trust_awareness_calculation import  trust_filter_capacity, trust_filter_country, trust_filter_desk_amenity, trust_filter_desk_description, trust_filter_desk_timedetails, trust_filter_postcode, trust_filter_price_for_city
+from .trust_awareness_calculation import apply_trust_filters, trust_filter_capacity, trust_filter_country, trust_filter_desk_amenity, trust_filter_desk_description, trust_filter_desk_timedetails, trust_filter_postcode, trust_filter_price_for_city, trust_filter_time_comparison
 
 
 logger = logging.getLogger(__name__)
@@ -210,7 +210,10 @@ def solid_file_view(request):
     auth = Auth()  # Configure this with the correct credentials
     solid_api_instance = SolidAPI(auth=auth)
 
-    file_urls = ["https://desk1.solidcommunity.net/desk7.ttl","https://desk1.solidcommunity.net/desk8.ttl",]
+    file_urls = ["https://desk1.solidcommunity.net/desk9.ttl","https://desk1.solidcommunity.net/desk10.ttl",
+                 "https://desk1.solidcommunity.net/desk11.ttl","https://desk1.solidcommunity.net/desk12.ttl",
+                 "https://desk1.solidcommunity.net/desk15.ttl","https://desk1.solidcommunity.net/desk16.ttl",
+                 "https://desk1.solidcommunity.net/desk17.ttl","https://desk1.solidcommunity.net/desk18.ttl"]
     all_desk_details = []
     error_messages = []
     booked_desk_ids = get_booked_desk_ids()
@@ -239,11 +242,14 @@ def solid_file_view(request):
     trust_status_description= trust_filter_desk_description(all_desk_details)
     trust_status_timedetails= trust_filter_desk_timedetails(all_desk_details)
     trust_status_price_for_city = trust_filter_price_for_city(all_desk_details)
+    trust_status_time_comparison= trust_filter_time_comparison(all_desk_details)
+    trust_color_status = apply_trust_filters(all_desk_details)
     
     return render(request, 'solid_file.html', {
         'all_desk_details': trust_status_desks,'all_desk_details':trust_status_country, 'all_desk_details':trust_status_capacity,
        'all_desk_details': trust_status_city_postcode,'all_desk_details': trust_status_description, 
-       'all_desk_details': trust_status_timedetails,'all_desk_details': trust_status_price_for_city,'error_messages': error_messages
+       'all_desk_details': trust_status_timedetails,'all_desk_details': trust_status_price_for_city,
+       'all_desk_details': trust_color_status,'all_desk_details': trust_status_time_comparison,'error_messages': error_messages
     }) 
 
 

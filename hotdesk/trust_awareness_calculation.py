@@ -107,3 +107,64 @@ def trust_filter_price_for_city(desks):
             desk['trust_status_price'] = "No price standard for " + city.capitalize()
 
     return desks
+
+def trust_filter_time_comparison(desks):
+    """
+    Checks if the end time is later than the start time for each desk.
+    Updates the trust status for time details accordingly.
+    """
+    for desk in desks:
+        # Parse start and end times into datetime objects
+        try:
+            start_time = desk['start_time'], "Y-m-d H:i"
+            end_time = desk['end_time'], "Y-m-d H:i"
+        except ValueError:
+            # If there's an error parsing the dates, mark as untrusted
+            desk['trust_status_time_comparison'] = "Untrusted! Invalid time format."
+            continue
+        
+        # Compare the start and end times
+        if end_time <= start_time:
+            desk['trust_status_time_comparison'] = "Untrusted! End time is not later than start time."
+        else:
+            desk['trust_status_time_comparison'] = "Trusted! End time is appropriately later than start time."
+    
+    return desks
+
+
+def calculate_overall_trust(desk):
+    decisions = [
+        desk.get('trust_status'),
+        desk.get('trust_status_Country'),
+        desk.get('trust_status_capacity'),
+        desk.get('trust_status_postcode'),
+        desk.get('trust_status_for_description'),
+        desk.get('trust_status_for_timedetails'),
+        desk.get('trust_status_time_comparison'),  # Include time comparison
+        desk.get('trust_status_price'),
+    ]
+
+    trusted_count = sum(decision.startswith("Trusted") for decision in decisions if decision is not None)
+
+    if trusted_count == len(decisions):
+        desk['overall_trust_status'] = 'green'
+    elif trusted_count == 0:
+        desk['overall_trust_status'] = 'red'
+    else:
+        desk['overall_trust_status'] = 'yellow'
+
+def apply_trust_filters(desks):
+    desks = trust_filter_desk_amenity(desks)
+    desks = trust_filter_country(desks)
+    desks = trust_filter_capacity(desks)
+    desks = trust_filter_postcode(desks)
+    desks = trust_filter_desk_description(desks)
+    desks = trust_filter_desk_timedetails(desks)
+    desks = trust_filter_time_comparison(desks)  # Apply the time comparison filter
+    desks = trust_filter_price_for_city(desks)
+
+    for desk in desks:
+        calculate_overall_trust(desk)
+
+    return desks
+

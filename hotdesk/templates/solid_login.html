@@ -1,14 +1,24 @@
 <!-- solid_login.html -->
-
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container">
-    <h2>Solid Login</h2>
+<div class=" d-flex justify-content-evenly align-items-center h-100 bg-dark text-white ">
+    <div>
+        <h2 class="text-primary text-center mb-3">Solid Login</h2>
     <form method="post" action="{% url 'hotdesk:solid-login' %}">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Login</button>
+        <div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </div>
     </form>
+    </div>
+    <div class="vr">
+    </div>
+    <div class="d-flex flex-column justify-content-center align-items-center ">
+        <h2 class="mb-3">Want to book a desk?</h2>
+        <h6 class="mb-3">Then press the desk details button</h6>
+        <a href="http://127.0.0.1:8000/hotdesk/solid-file/"><button class="btn btn-warning">Desk Details</button></a>
+    </div>
 </div>
 {% endblock %}

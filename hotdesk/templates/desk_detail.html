@@ -1,21 +1,61 @@
-<!-- desk_detail.html -->
-
 {% extends 'base.html' %}
 
 {% block title %}Desk Details{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1>Desk Details</h1>
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">Desk ID: {{ desk.desk_id }}</h5>
-            <p class="card-text">City: {{ desk.city_name }}</p>
-            <p class="card-text">Country: {{ desk.country }}</p>
-            <a href="{% url 'hotdesk:dashboard' %}" class="btn btn-secondary">Back</a>
-            <a href="{% url 'hotdesk:solid-logout' %}" class="btn btn-secondary">Log Out</a>
+<style>
+    .desk-details-container {
+        background-color: rgba(255, 255, 255, 0.2);
+        border: 1px solid #ddd; /* Adjusted for subtle border */
+        border-radius: 4px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23); /* 3D shadow effect */
+        transition: transform 0.3s ease-in-out; /* Smooth transition for hover effect */
+    }
+
+    .desk-details-container:hover {
+        transform: translateY(-5px); /* Slight lift on hover for more depth */
+    }
+
+    .btn-back {
+        background-color: #4CAF50; /* Green color for back */
+        border-color: #4CAF50;
+        color: white; /* White text color */
+    }
+
+    .btn-back:hover {
+        background-color: #45A049; /* Darker green on hover */
+    }
+
+    .btn-logout {
+        background-color: #f44336; /* Red color for log out */
+        border-color: #f44336;
+        color: white; /* White text color */
+    }
+
+    .btn-logout:hover {
+        background-color: #D32F2F; /* Darker red on hover */
+    }
+</style>
+<div style="background: linear-gradient(135deg, #2a3798, #ff7676); min-height: 100vh;">
+    <h1 class="text-center text-white py-4">Desk Details</h1>
+    <div class="d-flex justify-content-center">
+        <div class="desk-details-container">
+            <div class="form-container text-white">
+                <div class="mb-3"><strong>Desk ID:</strong> {{ desk.desk_id }}</div>
+                <div class="mb-3"><strong>Description:</strong> {{ desk.desk_description }}</div>
+                <div class="mb-3"><strong>City:</strong> {{ desk.city_name }}</div>
+                <div class="mb-3"><strong>Country:</strong> {{ desk.country }}</div>
+                <div class="mb-3"><strong>Capacity:</strong> {{ desk.capacity }}</div>
+                <div class="mb-3"><strong>Price:</strong> {{ desk.price }}</div>
+            </div>
         </div>
     </div>
-
+    <div class="d-flex justify-content-center gap-2">
+        <a href="{% url 'hotdesk:dashboard' %}" class="btn btn-back">Back</a>
+        <a href="{% url 'hotdesk:solid-logout' %}" class="btn btn-logout">Log Out</a>
+    </div>
 </div>
 {% endblock %}
+

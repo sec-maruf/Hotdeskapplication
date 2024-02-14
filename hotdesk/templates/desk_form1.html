@@ -3,63 +3,73 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container">
-    <h1>Create New Desk</h1>
+<style>
+    .shadow-3d {
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+        transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+        border-radius: 6px; /* Retains rounded corners */
+        padding: 2rem; /* Adjust padding to match the update page style */
+        background-color: rgba(255, 255, 255, 0.2); /* Keeps the translucent background */
+    }
+
+    .shadow-3d:hover {
+        transform: translateY(-1px);
+    }
+
+    .text-white {
+        color: white; /* Ensure text color is white for consistency */
+    }
+</style>
+
+<div style="background: linear-gradient(135deg, #2a3798, #ff7676); height: 100%;">
+    <h1 class="text-center py-2">Create New Desk</h1>
 
     <form method="post" action="{% url 'hotdesk:desk-create' %}">
         {% csrf_token %}
         
         <!-- Desk Info Section -->
-        <fieldset>
-            <legend>Desk Info</legend>
-            {{ desk_form.desk_id.label_tag }} {{ desk_form.desk_id }}
-            <br>
-            <br>
-            {{ desk_form.desk_description.label_tag }} {{ desk_form.desk_description }}
-            <br>
-            <br>
-            {{ desk_form.country.label_tag }} {{ desk_form.country }}
-            <br>
-            <br>
-            {{ desk_form.capacity.label_tag }} {{ desk_form.capacity}}
-            <br>
-            <br>
-            {{ desk_form.city_name.label_tag }} {{ desk_form.city_name }}
-            <br>
-            <br>
-            {{ desk_form.price.label_tag }} {{ desk_form.price }}
-            <br>
-            <br>
-            {{ desk_form.start_time.label_tag }} {{ desk_form.start_time }}
-            <br>
-            <br>
-            {{ desk_form.end_time.label_tag }} {{ desk_form.end_time }}
-            <br>
-            <br>
-            {{ desk_form.post_code.label_tag }} {{ desk_form.post_code }}
-            <br>
-            <br>
-            {{ desk_form.desk_number.label_tag }} {{ desk_form.desk_number }}
-            <br>
-            <br>
-            {{ desk_form.ergonomic_chair_number.label_tag }} {{ desk_form.ergonomic_chair_number }}
-            <br>
-            <br>
-            {{ desk_form.desk_monitor_number.label_tag }} {{ desk_form.desk_monitor_number }}
-            <br>
-            <br>
-</fieldset>
+        <div class="d-flex justify-content-evenly ms-5">
+            <fieldset class="shadow-3d">
+                <legend class="text-white text-center">Desk Information</legend>
+                <div class="d-flex justify-content-center gap-5">
+                    <div class="d-flex flex-column text-white">
+                        {{ desk_form.desk_id.label_tag }} {{ desk_form.desk_id }}
+                        {{ desk_form.desk_description.label_tag }} {{ desk_form.desk_description }}
+                        {{ desk_form.country.label_tag }} {{ desk_form.country }}
+                        {{ desk_form.capacity.label_tag }} {{ desk_form.capacity }}
+                        {{ desk_form.city_name.label_tag }} {{ desk_form.city_name }}
+                        {{ desk_form.price.label_tag }} {{ desk_form.price }}
+                    </div>
+                    <div class="d-flex flex-column text-white">
+                        {{ desk_form.start_time.label_tag }} {{ desk_form.start_time }}
+                        {{ desk_form.end_time.label_tag }} {{ desk_form.end_time }}
+                        {{ desk_form.post_code.label_tag }} {{ desk_form.post_code }}
+                        {{ desk_form.desk_number.label_tag }} {{ desk_form.desk_number }}
+                        {{ desk_form.ergonomic_chair_number.label_tag }} {{ desk_form.ergonomic_chair_number }}
+                        {{ desk_form.desk_monitor_number.label_tag }} {{ desk_form.desk_monitor_number }}
+                    </div>
+                </div>
+            </fieldset>
 
+            <!-- Solid Credential Info Section -->
+            <div class="d-flex flex-column">
+                <fieldset class="shadow-3d">
+                    <legend class="text-white text-center">Solid Credential Information</legend>
+                    <div class="form-container d-flex flex-column h-100 d-inline-block text-white"  style="padding: 3rem;">
+                        {{ solid_form.username.label_tag }} {{ solid_form.username }}
+                        {{ solid_form.password.label_tag }} {{ solid_form.password }}
+                        {{ solid_form.idp.label_tag }} {{ solid_form.idp }}
+                        {{ solid_form.pod_endpoint.label_tag }} {{ solid_form.pod_endpoint }}
+                    </div>
+                </fieldset>
+            </div>
+        </div>
 
-        <!-- Solid Credential Info Section -->
-        <fieldset>
-            <legend>Solid Credential Info</legend>
-            {{ solid_form.as_p }}
-        </fieldset>
-
-        <button type="submit" class="btn btn-primary">Create Desk</button>
-        <a href="{% url 'hotdesk:dashboard' %}" class="btn btn-secondary">Back</a>
-        <a href="{% url 'hotdesk:solid-logout' %}" class="btn btn-secondary">Log Out</a>
+        <div class="d-flex justify-content-center gap-2" style="margin-top: 5rem;">
+            <button type="submit" class="btn btn-primary">Create Desk</button>
+            <a href="{% url 'hotdesk:dashboard' %}" class="btn btn-secondary">Back</a>
+            <a href="{% url 'hotdesk:solid-logout' %}" class="btn btn-danger">Log Out</a>
+        </div>
     </form>
 </div>
 

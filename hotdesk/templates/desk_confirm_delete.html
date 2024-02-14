@@ -3,16 +3,48 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container">
-    <h1>Confirm Delete</h1>
-    <p>Are you sure you want to delete desk "{{ desk.desk_id }}"?</p>
+<style>
+    .shadow-3d {
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+        transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+        border-radius: 6px; /* Ensures rounded corners */
+        padding: 4rem; /* Consistent padding with the update page */
+        background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
+    }
+
+    .shadow-3d:hover {
+        transform: translateY(-1px); /* Lift effect on hover */
+    }
+
+    .text-white {
+        color: white; /* Ensures text color is consistent */
+    }
+</style>
+
+<div style="background: linear-gradient(135deg, #2a3798, #ff7676); height: 100%;">
+    <h1 class="text-center py-2">Desk Deletion</h1>
+    <p class="text-white text-center py-2">Are you sure you want to delete desk "{{ desk.desk_id }}"?</p>
     
-    <form method="post" action="{% url 'hotdesk:desk-delete' desk.id %}">
-        {% csrf_token %}
-        {{ solid_form.as_p }}
-        <input type="submit" value="Confirm Delete" class="btn btn-danger">
-        <a href="{% url 'hotdesk:dashboard' %}" class="btn btn-secondary">Cancel</a>
-        <a href="{% url 'hotdesk:solid-logout' %}" class="btn btn-secondary">Log Out</a>
-    </form>
+    <div class="d-flex justify-content-center">
+        <form method="post" action="{% url 'hotdesk:desk-delete' desk.id %}">
+            {% csrf_token %}
+            <fieldset class="shadow-3d">
+                <legend class="text-white text-center">Solid Credential Info</legend>
+                <div class="form-container d-flex flex-column h-100 d-inline-block text-white">
+                    {{ solid_form.username.label_tag }} {{ solid_form.username }}
+                    {{ solid_form.password.label_tag }} {{ solid_form.password }}
+                    {{ solid_form.idp.label_tag }} {{ solid_form.idp }}
+                    {{ solid_form.pod_endpoint.label_tag }} {{ solid_form.pod_endpoint }}
+                </div>
+            </fieldset>
+            
+            <div class="d-flex justify-content-center gap-2" style="margin-top: 5rem;"> 
+                <input type="submit" value="Confirm Delete" class="btn btn-primary">
+                <a href="{% url 'hotdesk:dashboard' %}" class="btn btn-secondary">Back</a>
+                <a href="{% url 'hotdesk:solid-logout' %}" class="btn btn-danger">Log Out</a>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}
+
