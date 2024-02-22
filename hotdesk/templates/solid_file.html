@@ -1,5 +1,3 @@
-<!-- solid_file.html -->
-
 {% extends 'base.html' %}
 
 {% block content %}
@@ -36,7 +34,7 @@
         transform: scale(1.02); /* Slightly scale up desk details on hover */
     }
 
-    .trust-circle {
+    /* .trust-circle {
         height: 15px;
         width: 15px;
         border-radius: 50%;
@@ -49,16 +47,16 @@
     .yellow { background-color: yellow; }
 
     .trust-help-text {
-        position: fixed; /* Fixed position to stay in view */
-        top: 20px; /* Distance from the top */
-        right: 20px; /* Distance from the right */
-        background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent white background */
+        position: fixed; /* Fixed position to stay in view *
+        top: 20px; /* Distance from the top 
+        right: 20px; /* Distance from the right 
+        background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent white background 
         padding: 10px;
-        border-radius: 8px; /* Rounded corners for a smoother look */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23); /* Subtle shadow for depth */
-        z-index: 1000; /* Ensure it sits above other content */
-        cursor: pointer; /* Indicates the element is interactive */
-    }
+        border-radius: 8px; /* Rounded corners for a smoother look 
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23); /* Subtle shadow for depth 
+        z-index: 1000; /* Ensure it sits above other content 
+        cursor: pointer; /* Indicates the element is interactive 
+    } */
 
     .trust-indicator {
         display: flex;
@@ -84,12 +82,10 @@
 
 </style>
 
-
-
 <div class="gradient-background">
     <h1 class="text-center text-white py-5">Hotdesk Details</h1>
 
-    <!-- Display error messages -->
+    <!-- Display error messages, if any -->
     {% if error_messages %}
         {% for error_message in error_messages %}
             <div class="alert alert-danger" role="alert">
@@ -98,51 +94,52 @@
         {% endfor %}
     {% endif %}
 
-    <!-- Display all desk details -->
+    <!-- Display all fully trusted desk details -->
     {% if all_desk_details %}
         <div class="desk-details-list row justify-content-center mx-0">
             {% for desk in all_desk_details %}
-                <div class="desk-details col-md-4 shadow-3d  m-2 text-white">
-                    <h3 class="text-center">
-                        <span class="trust-circle {{ desk.overall_trust_status }}"></span>
-                        Desk ID: {{ desk.desk_id }}
-                    </h3>
-                    <p><strong>Description:</strong> {{ desk.desk_description }}</p>
-                    <p><strong>Country:</strong> {{ desk.country }}</p>
-                    <p><strong>City:</strong> {{ desk.city_name }}</p>
-                    <p><strong>Capacity:</strong> {{ desk.capacity }}</p>
-                    <p><strong>Start Time:</strong> {{ desk.start_time }}</p>
-                    <p><strong>End Time:</strong> {{ desk.end_time }}</p>
-                    <p><strong>Price:</strong> {{ desk.price }}</p>
-                    <p><strong>Post code:</strong> {{ desk.post_code }}</p>
-                    <p><strong>Desk Quantity:</strong> {{ desk.desk_number }}</p>
-                    <p><strong>Ergonomic chair Quantity:</strong> {{ desk.ergonomic_chair_number }}</p>
-                    <p><strong>Desk monitor Quantity:</strong> {{ desk.desk_monitor_number }}</p>
-                    <p><strong>Trust-aware decisions:</strong></p>
-                    <ul>
-                        <li>{{ desk.trust_status }}</li>
-                        <li>{{ desk.trust_status_Country }}</li>
-                        <li>{{ desk.trust_status_capacity }}</li>
-                        <li>{{ desk.trust_status_postcode }}</li>
-                        <li>{{ desk.trust_status_for_description }}</li>
-                        <li>{{ desk.trust_status_for_timedetails }}</li>
-                        <li>{{ desk.trust_status_price }}</li>
-                        <li>{{ desk.trust_status_time_comparison }}</li>
-                        <!-- Additional trust-aware decisions omitted for brevity -->
-                    </ul>
-                    <!-- Additional details omitted for brevity -->
-                    <div class="booking-btn-container"
-                         data-book-url="{% url 'hotdesk:deskbook' %}?desk_id={{ desk.desk_id }}"
-                         data-is-booked="{{ desk.is_booked }}">
-                        <!-- Button will be inserted here by JavaScript -->
+                {% if desk.overall_trust_status == 'green' %}
+                    <div class="desk-details col-md-4 shadow-3d m-2 text-white">
+                        <h3 class="text-center">
+                            <!-- Trust circle commented out
+                            <span class="trust-circle {{ desk.overall_trust_status }}"></span> -->
+                            Desk ID: {{ desk.desk_id }}
+                        </h3>
+                        <p><strong>Description:</strong> {{ desk.desk_description }}</p>
+                        <p><strong>Country:</strong> {{ desk.country }}</p>
+                        <p><strong>City:</strong> {{ desk.city_name }}</p>
+                        <p><strong>Capacity:</strong> {{ desk.capacity }}</p>
+                        <p><strong>Start Time:</strong> {{ desk.start_time }}</p>
+                        <p><strong>End Time:</strong> {{ desk.end_time }}</p>
+                        <p><strong>Price:</strong> {{ desk.price }}</p>
+                        <p><strong>Post code:</strong> {{ desk.post_code }}</p>
+                        <p><strong>Desk Quantity:</strong> {{ desk.desk_number }}</p>
+                        <p><strong>Ergonomic chair Quantity:</strong> {{ desk.ergonomic_chair_number }}</p>
+                        <p><strong>Desk monitor Quantity:</strong> {{ desk.desk_monitor_number }}</p>
+                        <p><strong>Trust-aware decisions:</strong></p>
+                        <ul>
+                            <li>{{ desk.trust_status }}</li>
+                            <li>{{ desk.trust_status_Country }}</li>
+                            <li>{{ desk.trust_status_capacity }}</li>
+                            <li>{{ desk.trust_status_postcode }}</li>
+                            <li>{{ desk.trust_status_for_description }}</li>
+                            <li>{{ desk.trust_status_price }}</li>
+                            <!-- Additional trust-aware decisions omitted for brevity -->
+                        </ul>
+                        <!-- Additional details omitted for brevity -->
+                        <div class="booking-btn-container"
+                             data-book-url="{% url 'hotdesk:deskbook' %}?desk_id={{ desk.desk_id }}"
+                             data-is-booked="{{ desk.is_booked }}">
+                            <!-- Button will be inserted here by JavaScript -->
+                        </div>
                     </div>
-                </div>
+                {% endif %}
             {% endfor %}
         </div>
     {% else %}
-        <p class="text-center text-white">No desk details available.</p>
+        <p class="text-center text-white">No fully trusted desk details available.</p>
     {% endif %}
-    <!-- Trust Help Text -->
+    <!-- Trust Help Text 
     <div class="trust-help-text" onmouseover="showHelpText()" onmouseout="hideHelpText()">
         <div class="trust-indicator">
             <span class="trust-circle green"></span>
@@ -156,6 +153,8 @@
             <span class="trust-circle red"></span>
             <span class="trust-text text-small">Fully Untrusted Desk</span>
         </div>                
+    </div>
+    -->
 </div>
 
 <script>
@@ -184,10 +183,8 @@
             }
         });
     });
-    </script>
-
-<script>
-    function showHelpText() {
+    
+   /*  function showHelpText() {
         document.querySelectorAll('.trust-text').forEach(function(element) {
             element.style.display = 'block';
         });
@@ -197,7 +194,6 @@
         document.querySelectorAll('.trust-text').forEach(function(element) {
             element.style.display = 'none';
         });
-    }
+    } */
 </script>
-    
-    {% endblock %}
+{% endblock %}

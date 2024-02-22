@@ -7,6 +7,7 @@ urlpatterns = [
     path('desk/update/<int:desk_id>/', desk_update_view, name='desk-update'),
     path('desk/delete/<int:desk_id>/', desk_delete_view, name='desk-delete'),
     path('desk/<int:desk_id>/', desk_detail_view, name='desk-detail'),
+    
     path('login/', solid_login_view, name='solid-login'),
     path('logout/', solid_logout_view, name='solid-logout'),
     path('dashboard/', dashboard_view, name='dashboard'),

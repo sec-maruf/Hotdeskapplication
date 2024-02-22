@@ -70,17 +70,6 @@ def trust_filter_desk_description(desks):
             desk['trust_status_for_description'] = "Trusted! the desk has  proper description."  
     return desks
 
-def trust_filter_desk_timedetails(desks):
-    for desk in desks:
-        # Check if start_time or end_time are either None or empty strings
-        if not desk['start_time'] or not desk['end_time']:
-            desk['trust_status_for_timedetails'] = "Untrusted! The desk has no proper time details of availability."
-        else:
-            desk['trust_status_for_timedetails'] = "Trusted! The desk has proper time details of availability."
-    return desks
-
-
-
 def trust_filter_price_for_city(desks):
     city_price_mapping = {
         'essen': 50,
@@ -108,30 +97,6 @@ def trust_filter_price_for_city(desks):
 
     return desks
 
-def trust_filter_time_comparison(desks):
-    """
-    Checks if the end time is later than the start time for each desk.
-    Updates the trust status for time details accordingly.
-    """
-    for desk in desks:
-        # Parse start and end times into datetime objects
-        try:
-            start_time = desk['start_time'], "Y-m-d H:i"
-            end_time = desk['end_time'], "Y-m-d H:i"
-        except ValueError:
-            # If there's an error parsing the dates, mark as untrusted
-            desk['trust_status_time_comparison'] = "Untrusted! Invalid time format."
-            continue
-        
-        # Compare the start and end times
-        if end_time <= start_time:
-            desk['trust_status_time_comparison'] = "Untrusted! End time is not later than start time."
-        else:
-            desk['trust_status_time_comparison'] = "Trusted! End time is appropriately later than start time."
-    
-    return desks
-
-
 def calculate_overall_trust(desk):
     decisions = [
         desk.get('trust_status'),
@@ -139,8 +104,6 @@ def calculate_overall_trust(desk):
         desk.get('trust_status_capacity'),
         desk.get('trust_status_postcode'),
         desk.get('trust_status_for_description'),
-        desk.get('trust_status_for_timedetails'),
-        desk.get('trust_status_time_comparison'),  # Include time comparison
         desk.get('trust_status_price'),
     ]
 
@@ -159,8 +122,6 @@ def apply_trust_filters(desks):
     desks = trust_filter_capacity(desks)
     desks = trust_filter_postcode(desks)
     desks = trust_filter_desk_description(desks)
-    desks = trust_filter_desk_timedetails(desks)
-    desks = trust_filter_time_comparison(desks)  # Apply the time comparison filter
     desks = trust_filter_price_for_city(desks)
 
     for desk in desks:

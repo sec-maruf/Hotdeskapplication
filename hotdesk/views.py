@@ -2,8 +2,11 @@
 
 import datetime
 from uuid import uuid4
+from django.forms import model_to_dict
 from django.shortcuts import get_object_or_404, render, redirect
 import httpx
+
+from hotdesk.trust_awarness_calculation_single_desk import apply_trust_filters_to_single_desk
 
 #from hotdesk.trust_awareness_calculation import calculate_trust_score_and_sort
 from .models import Desk
@@ -18,7 +21,7 @@ from django.urls import reverse
 import logging
 from django.contrib import messages
 from .decorators import solid_username_required
-from .trust_awareness_calculation import apply_trust_filters, trust_filter_capacity, trust_filter_country, trust_filter_desk_amenity, trust_filter_desk_description, trust_filter_desk_timedetails, trust_filter_postcode, trust_filter_price_for_city, trust_filter_time_comparison
+from .trust_awareness_calculation import apply_trust_filters, trust_filter_capacity, trust_filter_country, trust_filter_desk_amenity, trust_filter_desk_description,  trust_filter_postcode, trust_filter_price_for_city
 
 
 logger = logging.getLogger(__name__)
@@ -57,7 +60,9 @@ def desk_create_view(request):
 @solid_username_required(['hotdeskadmin'])
 def desk_detail_view(request, desk_id):
     desk = get_object_or_404(Desk, pk=desk_id)
-    return render(request, 'desk_detail.html', {'desk': desk})
+    desk_dict = model_to_dict(desk)
+    adjusted_desk_dict = apply_trust_filters_to_single_desk(desk_dict)
+    return render(request, 'desk_detail.html', {'desk': adjusted_desk_dict})
 
 @solid_username_required(['hotdeskadmin'])
 def desk_update_view(request, desk_id):
@@ -213,7 +218,8 @@ def solid_file_view(request):
     file_urls = ["https://desk1.solidcommunity.net/desk9.ttl","https://desk1.solidcommunity.net/desk10.ttl",
                  "https://desk1.solidcommunity.net/desk11.ttl","https://desk1.solidcommunity.net/desk12.ttl",
                  "https://desk1.solidcommunity.net/desk15.ttl","https://desk1.solidcommunity.net/desk16.ttl",
-                 "https://desk1.solidcommunity.net/desk17.ttl","https://desk1.solidcommunity.net/desk18.ttl"]
+                 "https://desk1.solidcommunity.net/desk17.ttl","https://desk1.solidcommunity.net/desk18.ttl",
+                 "https://desk1.solidcommunity.net/profile/desk20.ttl"]
     all_desk_details = []
     error_messages = []
     booked_desk_ids = get_booked_desk_ids()
@@ -240,16 +246,13 @@ def solid_file_view(request):
     trust_status_capacity= trust_filter_capacity(all_desk_details)
     trust_status_city_postcode= trust_filter_postcode(all_desk_details)
     trust_status_description= trust_filter_desk_description(all_desk_details)
-    trust_status_timedetails= trust_filter_desk_timedetails(all_desk_details)
     trust_status_price_for_city = trust_filter_price_for_city(all_desk_details)
-    trust_status_time_comparison= trust_filter_time_comparison(all_desk_details)
     trust_color_status = apply_trust_filters(all_desk_details)
     
     return render(request, 'solid_file.html', {
         'all_desk_details': trust_status_desks,'all_desk_details':trust_status_country, 'all_desk_details':trust_status_capacity,
        'all_desk_details': trust_status_city_postcode,'all_desk_details': trust_status_description, 
-       'all_desk_details': trust_status_timedetails,'all_desk_details': trust_status_price_for_city,
-       'all_desk_details': trust_color_status,'all_desk_details': trust_status_time_comparison,'error_messages': error_messages
+       'all_desk_details': trust_status_price_for_city,'all_desk_details': trust_color_status,'error_messages': error_messages
     }) 
 
 
