@@ -1,4 +1,5 @@
 # rdf_utils.py
+import json
 from rdflib import Graph, Literal, URIRef, Namespace
 from rdflib.namespace import RDF, XSD
 from .models import Desk
@@ -6,7 +7,7 @@ from .models import Desk
 # Define your namespace
 EX = Namespace("http://example.org/")
 
-def desk_to_rdf(desk: Desk) -> Graph:
+""" def desk_to_rdf(desk: Desk) -> Graph:
     graph = Graph()
 
 
@@ -21,19 +22,59 @@ def desk_to_rdf(desk: Desk) -> Graph:
     graph.add((desk_uri, EX.capacity, Literal(desk.capacity, datatype=XSD.integer)))
     graph.add((desk_uri, EX.country, Literal(desk.country, datatype=XSD.integer)))
     graph.add((desk_uri, EX.city_name, Literal(desk.city_name, datatype=XSD.integer)))
-    
-    if desk.start_time:
-        graph.add((desk_uri, EX.start_time, Literal(desk.start_time.isoformat(), datatype=XSD.dateTime)))
-    if desk.end_time:
-        graph.add((desk_uri, EX.end_time, Literal(desk.end_time.isoformat(), datatype=XSD.dateTime)))
     graph.add((desk_uri, EX.price, Literal(desk.price, datatype=XSD.decimal)))
     graph.add((desk_uri, EX.post_code, Literal(desk.post_code, datatype=XSD.integer)))
     graph.add((desk_uri, EX.desk_number, Literal(desk.desk_number, datatype=XSD.integer)))
     graph.add((desk_uri, EX.ergonomic_chair_number, Literal(desk.ergonomic_chair_number, datatype=XSD.integer)))
     graph.add((desk_uri, EX.desk_monitor_number, Literal(desk.desk_monitor_number, datatype=XSD.integer)))
+
+    if desk.date_times:
+        date_times_list = json.loads(desk.date_times)
+        for date_range in date_times_list:
+            start_date, end_date = date_range  # These are ISO format strings
+            graph.add((desk_uri, EX.start_date, Literal(start_date, datatype=XSD.dateTime)))
+            graph.add((desk_uri, EX.end_date, Literal(end_date, datatype=XSD.dateTime)))
+
     
 
     return graph
+ """
+
+
+def desk_to_rdf(desk: Desk, current_start_date_iso=None, current_end_date_iso=None) -> Graph:
+    graph = Graph()
+    
+    # Create a URIRef for the desk
+    desk_uri = URIRef(f"http://example.org/desk/{desk.desk_id}")
+
+    # Add common triples to the graph
+    graph.add((desk_uri, RDF.type, EX.Desk))
+    graph.add((desk_uri, EX.desk_id, Literal(desk.desk_id, datatype=XSD.string)))
+    graph.add((desk_uri, EX.desk_description, Literal(desk.desk_description, datatype=XSD.string)))
+    graph.add((desk_uri, EX.capacity, Literal(desk.capacity, datatype=XSD.integer)))
+    graph.add((desk_uri, EX.country, Literal(desk.country, datatype=XSD.string)))  # Assuming country should be a string
+    graph.add((desk_uri, EX.city_name, Literal(desk.city_name, datatype=XSD.string)))  # Assuming city_name should be a string
+    graph.add((desk_uri, EX.price, Literal(desk.price, datatype=XSD.decimal)))
+    graph.add((desk_uri, EX.post_code, Literal(desk.post_code, datatype=XSD.string)))  # Assuming post_code should be a string
+    graph.add((desk_uri, EX.desk_number, Literal(desk.desk_number, datatype=XSD.integer)))
+    graph.add((desk_uri, EX.ergonomic_chair_number, Literal(desk.ergonomic_chair_number, datatype=XSD.integer)))
+    graph.add((desk_uri, EX.desk_monitor_number, Literal(desk.desk_monitor_number, datatype=XSD.integer)))
+
+    # Add only the current booking's date range if provided
+    if current_start_date_iso and current_end_date_iso:
+        graph.add((desk_uri, EX.start_date, Literal(current_start_date_iso, datatype=XSD.dateTime)))
+        graph.add((desk_uri, EX.end_date, Literal(current_end_date_iso, datatype=XSD.dateTime)))
+    else:
+        # Fallback to adding all date ranges from desk.date_times if current dates are not provided
+        if desk.date_times:
+            date_times_list = json.loads(desk.date_times)
+            for date_range in date_times_list:
+                start_date, end_date = date_range  # These are ISO format strings
+                graph.add((desk_uri, EX.start_date, Literal(start_date, datatype=XSD.dateTime)))
+                graph.add((desk_uri, EX.end_date, Literal(end_date, datatype=XSD.dateTime)))
+
+    return graph
+
 
 def parse_turtle_content(turtle_content):
     g = Graph()
@@ -50,8 +91,6 @@ def parse_turtle_content(turtle_content):
             'country': str(g.value(desk_uri, EX.country, default="")),
             'capacity': str(g.value(desk_uri, EX.capacity, default="")),
             'city_name': str(g.value(desk_uri, EX.city_name, default="")),
-            'start_time': str(g.value(desk_uri, EX.start_time, default="")),
-            'end_time': str(g.value(desk_uri, EX.end_time, default="")),
             'price': str(g.value(desk_uri, EX.price, default="")),
             'post_code': str(g.value(desk_uri, EX.post_code, default="")),
             'desk_number': str(g.value(desk_uri, EX.desk_number, default="")),

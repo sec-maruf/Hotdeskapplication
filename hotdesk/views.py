@@ -1,6 +1,7 @@
 # views.py
 
 import datetime
+import json
 from uuid import uuid4
 from django.forms import model_to_dict
 from django.shortcuts import get_object_or_404, render, redirect
@@ -50,7 +51,10 @@ def desk_create_view(request):
             except Exception as e:
                 messages.error(request, f"Error during Solid POD interaction: {e}")
         else:
-            messages.error(request, "Form validation failed")
+            print("Desk Form Errors:", desk_form.errors)
+            print("Solid Form Errors:", solid_form.errors)
+            messages.error(request, "Form validation failed")  
+          
 
     return render(request, 'desk_form1.html', {'desk_form': desk_form, 'solid_form': solid_form})
 
@@ -215,22 +219,15 @@ def solid_file_view(request):
     auth = Auth()  # Configure this with the correct credentials
     solid_api_instance = SolidAPI(auth=auth)
 
-    file_urls = ["https://desk1.solidcommunity.net/desk9.ttl","https://desk1.solidcommunity.net/desk10.ttl",
-                 "https://desk1.solidcommunity.net/desk11.ttl","https://desk1.solidcommunity.net/desk12.ttl",
-                 "https://desk1.solidcommunity.net/desk15.ttl","https://desk1.solidcommunity.net/desk16.ttl",
-                 "https://desk1.solidcommunity.net/desk17.ttl","https://desk1.solidcommunity.net/desk18.ttl",
-                 "https://desk1.solidcommunity.net/profile/desk20.ttl"]
+    file_urls = ["https://desk1.solidcommunity.net/public/desk1.ttl","https://desk1.solidcommunity.net/public/desk2.ttl"]
     all_desk_details = []
     error_messages = []
-    booked_desk_ids = get_booked_desk_ids()
+   # booked_desk_ids = get_booked_desk_ids()
     for file_url in file_urls:
         try:
             response = solid_api_instance.get(file_url)
             turtle_content = response.text
             desk_details = parse_turtle_content(turtle_content)
-            for desk_detail in desk_details:
-                desk_id = desk_detail.get('desk_id')
-                desk_detail['is_booked'] = desk_id in booked_desk_ids
             all_desk_details.extend(desk_details)
             
             request.session['all_desk_details'] = all_desk_details  # Store in session
@@ -256,7 +253,9 @@ def solid_file_view(request):
     }) 
 
 
-def deskbook(request):
+
+
+""" def deskbook(request):
     desk_id = request.POST.get('desk_id') or request.GET.get('desk_id')
 
     if not desk_id:
@@ -266,9 +265,6 @@ def deskbook(request):
     desk = get_object_or_404(Desk, desk_id=desk_id)
     book_desk_form = DeskForm(request.POST or None, instance=desk)
     book_solid_form = SolidCredentialsForm(request.POST or None)
-    if desk.is_booked:
-        messages.error(request, "This desk is already booked.")
-        return redirect('hotdesk:solid-file')
 
     if request.method == 'POST':
         if book_desk_form.is_valid() and book_solid_form.is_valid():
@@ -285,7 +281,6 @@ def deskbook(request):
                 response = api.create_file(pod_file_url, turtle_data, 'text/turtle')
                 if response.status_code == 201:
                     #print("Attempting to redirect to booking confirmation")
-                    desk.is_booked = True
                     desk.save()
                     messages.success(request, "Book POD file created successfully.")
                     return redirect('hotdesk:booking_confirmation', desk_id=desk.desk_id)
@@ -300,22 +295,74 @@ def deskbook(request):
             print("Solid Form Errors:", book_solid_form.errors)
             messages.error(request, "Form validation failed")
 
-    return render(request, 'solid_cred_login_booking.html', {'book_desk_form': book_desk_form,'book_solid_form': book_solid_form,  'desk': desk})
+    return render(request, 'solid_cred_login_booking.html', {'book_desk_form': book_desk_form,'book_solid_form': book_solid_form,  'desk': desk}) """
+
+
+def deskbook(request):
+    desk_id = request.POST.get('desk_id') or request.GET.get('desk_id')
+
+    if not desk_id:
+        messages.error(request, "No desk ID provided.")
+        return redirect('hotdesk:solid-file')
+
+    desk = get_object_or_404(Desk, desk_id=desk_id)
+    book_desk_form = DeskForm(request.POST or None, instance=desk)
+    book_solid_form = SolidCredentialsForm(request.POST or None)
+
+    if request.method == 'POST':
+        if book_desk_form.is_valid() and book_solid_form.is_valid():
+            # Temporarily save the form to access cleaned_data, but don't commit to the database yet
+            temp_desk = book_desk_form.save(commit=False)
+            solid_data = book_solid_form.cleaned_data
+            
+            # Extract the current booking dates
+            current_start_date = book_desk_form.cleaned_data.get('start_date')
+            current_end_date = book_desk_form.cleaned_data.get('end_date')
+            
+            # Only proceed if both dates are provided
+            if current_start_date and current_end_date:
+                # Convert dates to ISO format for serialization
+                current_start_date_iso = current_start_date.isoformat()
+                current_end_date_iso = current_end_date.isoformat()
+
+                # Serialize only the current booking dates
+                # Assuming a modified version of desk_to_rdf that accepts start and end dates
+                turtle_data = desk_to_rdf(temp_desk, current_start_date_iso, current_end_date_iso).serialize(format="turtle").decode("utf-8")
+                
+                try:
+                    api = get_solid_api(solid_data['idp'], solid_data['username'], solid_data['password'])
+                    pod_file_url = f"{solid_data['pod_endpoint'].rstrip('/')}/booking{desk.desk_id}.ttl"
+
+                    response = api.create_file(pod_file_url, turtle_data, 'text/turtle')
+                    if response.status_code == 201:
+                        # Save the desk instance to the database after successful POD file creation
+                        book_desk_form.save()  # Now actually commit the form data to the database
+                        messages.success(request, "Book POD file created successfully.")
+                        return redirect('hotdesk:booking_confirmation', desk_id=desk.desk_id)
+                    else:
+                        messages.error(request, f"Unexpected response from server: {response.status_code} - {response.content}")
+                except Exception as e:
+                    messages.error(request, f"Error during Solid POD interaction: {e}")
+            else:
+                messages.error(request, "Both start and end dates must be provided.")
+        else:
+            print("Desk Form Errors:", book_desk_form.errors)
+            print("Solid Form Errors:", book_solid_form.errors)
+            messages.error(request, "Form validation failed")
+
+    return render(request, 'solid_cred_login_booking.html', {'book_desk_form': book_desk_form, 'book_solid_form': book_solid_form, 'desk': desk})
+
+
 
 def booking_confirmation(request, desk_id):
     desk = get_object_or_404(Desk, desk_id=desk_id)
     return render(request, 'booking_confirmation.html', {'desk': desk})
 
 
-def get_booked_desk_ids():
-    """
-    Fetches and returns a list of desk IDs for desks that are currently booked.
-
-    Returns:
-        list of str: A list of booked desk IDs.
-    """
+""" def get_booked_desk_ids():
+    
     # Query the Desk model for desks that are booked
     booked_desks = Desk.objects.filter(is_booked=True)
     # Extract the desk_id of each booked desk and return it as a list
     booked_desk_ids = [desk.desk_id for desk in booked_desks]
-    return booked_desk_ids
+    return booked_desk_ids """
