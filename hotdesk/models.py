@@ -1,7 +1,10 @@
 # models.py
 from django.db import models
 
+
 from hotdesk.custom_date_field import DateArrayField
+
+
 class Desk(models.Model):
     desk_id = models.CharField(max_length=200)
     desk_description = models.CharField(max_length=200)
@@ -14,6 +17,7 @@ class Desk(models.Model):
     ergonomic_chair_number = models.IntegerField(default=0)
     desk_monitor_number = models.IntegerField(default=0)
     date_times = DateArrayField(blank=True, null=True)
-    
-    
+    solid_username = models.CharField(max_length=200, blank=True, null=True)
+   
+
 

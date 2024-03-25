@@ -4,161 +4,70 @@
 
 {% block content %}
 <style>
-    /* Style for the custom dropdown */
-.dropdown {
-  width: 200px; /* Adjust as needed */
-  margin-left: 3rem;
-  font-family: Arial, sans-serif;
-}
-
-.dropdown-select {
-  position: relative;
-  background-color:  rgba(255, 255, 255, 0.1);
-  padding: 10px;
-  color: white;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.dropdown-list {
-  position: absolute;
-  width: 100%;
-  display: none;
-  margin-top: 5px; /* This creates the gap between select and options */
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
-}
-
-.dropdown-list-item {
-  padding: 10px;
-  color: white;
-  margin-bottom: 6px;
-  background-color: rgba(255, 255, 255, 0.1); 
-  cursor: pointer;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
-}
-
-.dropdown-list-item:hover {
-  background-color: #333333;
-}
-
-.fa-chevron-down {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.dropdown-list-item:first-child {
-  border-top: none;
-}
-
-.shadow-3d:hover {
-        transform: translateY(-3px);
+    .dashboard-container {
+        background: linear-gradient(135deg, #2a3798, #ff7676);
+        min-height: 100vh;
+        padding-top: 20px;
     }
-
-
-
+    .dashboard-header {
+        text-align: center;
+        color: white;
+    }
+    .desk-list-container, .action-buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+    }
+    .desk, .action-button {
+        background-color: rgba(255,255,255, 0.1);
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+        margin-bottom: 10px;
+    }
+    .desk:hover, .action-button:hover {
+        transform: translateY(-5px);
+    }
+    .btn-link, a.btn {
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    a.btn {
+        margin: 5px;
+    }
 </style>
-<div class="" style="background: linear-gradient(135deg, #2a3798, #ff7676); height: 100%;">
-    <h2 class="text-center pt-2 text-white">Dashboard</h2>
-    <h3 class="text-center text-white">Create Update or Delete a Desk</h3>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h2>Dashboard</h2>
+        <h3>Create, Update, or Delete Desks</h3>
+    </div>
     
-   <!-- Custom Dropdown Container -->
-<div class="dropdown">
-    <div class="dropdown-select">
-      <span class="select">Select Desk</span>
-      <i class="fa fa-chevron-down"></i>
+    <!-- Listing desks with action buttons -->
+    <div class="desk-list-container">
+        {% for desk in desks %}
+        <div class="desk">
+            <h4>{{ desk.desk_id }}</h4>
+            <div>
+                <a href="{% url 'hotdesk:desk-detail' desk_id=desk.id %}" class="btn btn-info">Details</a>
+                <a href="{% url 'hotdesk:desk-update' desk_id=desk.id %}" class="btn btn-primary">Update</a>
+                <a href="{% url 'hotdesk:desk-delete' desk_id=desk.id %}" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this desk?');">Delete</a>
+            </div>
+        </div>
+        {% endfor %}
     </div>
-    <div class="dropdown-list ">
-      <!-- Custom Options -->
-      {% for desk in desks %}
-      <div class="dropdown-list-item "  data-value="{{desk.id}}">{{ desk.desk_id }}</div>
-      {% endfor %}
-    </div>
-  </div>
-  >
     
-    <div class="mt-5" style="margin-left: 14rem;">
-    <div class="d-flex justify-content-evenly">
-        <div class="d-flex justify-content-center align-items-center gap-5 shadow-3d">
-            <a href="{% url 'hotdesk:desk-create' %}"
-                class="btn d-flex justify-content-center align-items-center"
-                style="height: 27rem;width:15rem; background-color: rgba(255,255,255, .1);box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);">
-                <p class="text-white">Create Desk</p>
-            </a>
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <div class="action-button">
+            <a href="{% url 'hotdesk:desk-create' %}" class="btn-link">Create Desk</a>
         </div>
-        <div class="d-flex justify-content-center flex-column  gap-5 ">
-            <a id="update-desk" href="#" class="btn  d-flex justify-content-center align-items-center shadow-3d"
-                style="height: 12rem;width:25rem;background-color: rgba(255,255,255, .1);box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);">
-                <p class="text-white">Update Desk</p>
-            </a>
-            <a id="delete-desk" href="#" class="btn  d-flex justify-content-center align-items-center shadow-3d"
-                style="height: 12rem;width:25rem; background-color: rgba(255,255,255, .1);box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);"><p class="text-white">Delete Desk</p></a>
+        <div class="action-button">
+            <a href="{% url 'hotdesk:solid-logout' %}" class="btn-link">Log Out</a>
         </div>
-        <div class="d-flex justify-content-center align-items-center shadow-3d">
-            
-            <a href="{% url 'hotdesk:solid-logout' %}"
-                class="btn  d-flex justify-content-center align-items-center"
-                style="height: 27rem;width:15rem; background-color: rgba(255,255,255, .1); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);"><p class="text-white">Log Out</p></a>
-        </div>
-    </div>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    var dropdown = document.querySelector('.dropdown');
-    var dropdownSelect = document.querySelector('.dropdown-select');
-    var dropdownList = document.querySelector('.dropdown-list');
-    var dropdownListItems = document.querySelectorAll('.dropdown-list-item');
-    var updateButton = document.getElementById('update-desk');
-    var deleteButton = document.getElementById('delete-desk');
-
-    // Function to update the href for the update and delete buttons
-    function updateActionUrls(deskId) {
-        updateButton.href = `/hotdesk/desk/update/${deskId}/`;
-        deleteButton.href = `/hotdesk/desk/delete/${deskId}/`;
-    }
-
-    // Initialize the action URLs if there are items in the dropdown
-    if (dropdownListItems.length > 0) {
-        var initialDeskId = dropdownListItems[0].getAttribute('data-value');
-        updateActionUrls(initialDeskId);
-        dropdownSelect.querySelector('.select').textContent = "Select Desk"; // Set the initial text
-    }
-
-    // Toggle the custom dropdown list
-    dropdownSelect.addEventListener('click', function(event) {
-        var isListVisible = dropdownList.style.display === 'block';
-        // Hide the list if it's already visible, show it if it's not
-        dropdownList.style.display = isListVisible ? 'none' : 'block';
-    });
-
-    // Update the select and the visible selected value
-    dropdownListItems.forEach(function(item) {
-        item.addEventListener('click', function() {
-            dropdownSelect.querySelector('.select').textContent = item.textContent;
-            var deskId = item.getAttribute('data-value');
-            updateActionUrls(deskId);
-            dropdownList.style.display = 'none'; // Hide the list after selection
-        });
-    });
-
-    // Close dropdown when clicked outside
-    document.addEventListener('click', function(e) {
-        if (!dropdown.contains(e.target)) {
-            dropdownList.style.display = 'none';
-        }
-    });
-
-    // This prevents clicks on the dropdown from propagating to the document
-    dropdown.addEventListener('click', function(event) {
-        event.stopPropagation();
-    });
-});
-
-
-</script>
 {% endblock %}

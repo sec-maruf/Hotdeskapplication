@@ -110,11 +110,11 @@ def calculate_overall_trust(desk):
     trusted_count = sum(decision.startswith("Trusted") for decision in decisions if decision is not None)
 
     if trusted_count == len(decisions):
-        desk['overall_trust_status'] = 'green'
+        desk['overall_trust_status'] = 'Full trusted'
     elif trusted_count == 0:
-        desk['overall_trust_status'] = 'red'
+        desk['overall_trust_status'] = 'FUll untrusted'
     else:
-        desk['overall_trust_status'] = 'yellow'
+        desk['overall_trust_status'] = 'Partly Trusted'
 
 def apply_trust_filters(desks):
     desks = trust_filter_desk_amenity(desks)

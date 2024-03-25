@@ -52,10 +52,10 @@ def desk_to_rdf(desk: Desk, current_start_date_iso=None, current_end_date_iso=No
     graph.add((desk_uri, EX.desk_id, Literal(desk.desk_id, datatype=XSD.string)))
     graph.add((desk_uri, EX.desk_description, Literal(desk.desk_description, datatype=XSD.string)))
     graph.add((desk_uri, EX.capacity, Literal(desk.capacity, datatype=XSD.integer)))
-    graph.add((desk_uri, EX.country, Literal(desk.country, datatype=XSD.string)))  # Assuming country should be a string
-    graph.add((desk_uri, EX.city_name, Literal(desk.city_name, datatype=XSD.string)))  # Assuming city_name should be a string
+    graph.add((desk_uri, EX.country, Literal(desk.country, datatype=XSD.string)))  
+    graph.add((desk_uri, EX.city_name, Literal(desk.city_name, datatype=XSD.string)))  
     graph.add((desk_uri, EX.price, Literal(desk.price, datatype=XSD.decimal)))
-    graph.add((desk_uri, EX.post_code, Literal(desk.post_code, datatype=XSD.string)))  # Assuming post_code should be a string
+    graph.add((desk_uri, EX.post_code, Literal(desk.post_code, datatype=XSD.string)))  
     graph.add((desk_uri, EX.desk_number, Literal(desk.desk_number, datatype=XSD.integer)))
     graph.add((desk_uri, EX.ergonomic_chair_number, Literal(desk.ergonomic_chair_number, datatype=XSD.integer)))
     graph.add((desk_uri, EX.desk_monitor_number, Literal(desk.desk_monitor_number, datatype=XSD.integer)))

@@ -98,7 +98,7 @@
     {% if all_desk_details %}
         <div class="desk-details-list row justify-content-center mx-0">
             {% for desk in all_desk_details %}
-                {% if desk.overall_trust_status == 'green' %}
+                {% if desk.overall_trust_status == 'Full trusted' %}
                     <div class="desk-details col-md-4 shadow-3d m-2 text-white">
                         <h3 class="text-center">
                             <!-- Trust circle commented out
@@ -111,7 +111,7 @@
                         <p><strong>Capacity:</strong> {{ desk.capacity }}</p>
                         <p><strong>Price:</strong> {{ desk.price }}</p>
                         <p><strong>Post code:</strong> {{ desk.post_code }}</p>
-                        <p><strong>Desk Quantity:</strong> {{ desk.desk_number }}</p>
+                        <p><strong>Desk's Quantity:</strong> {{ desk.desk_number }}</p>
                         <p><strong>Ergonomic chair Quantity:</strong> {{ desk.ergonomic_chair_number }}</p>
                         <p><strong>Desk monitor Quantity:</strong> {{ desk.desk_monitor_number }}</p>
                         <p><strong>Trust-aware decisions:</strong></p>

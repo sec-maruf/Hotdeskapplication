@@ -48,7 +48,38 @@ class DeskForm(forms.ModelForm):
         ]
 
 
+
+
     def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+
+        # Skip the conflict check if either start_date or end_date is not provided
+        if start_date is None or end_date is None:
+            return cleaned_data
+
+        existing_date_ranges = json.loads(self.instance.date_times) if self.instance.date_times else []
+
+        for date_range in existing_date_ranges:
+            if isinstance(date_range, str):
+                existing_start = existing_end = datetime.fromisoformat(date_range)
+            elif isinstance(date_range, list) and len(date_range) == 2:
+                existing_start_str, existing_end_str = date_range
+                existing_start = datetime.fromisoformat(existing_start_str)
+                existing_end = datetime.fromisoformat(existing_end_str)
+            else:
+                # Handle unexpected format
+                raise ValidationError(f"Invalid date range format in existing bookings: {date_range}")
+
+            if start_date <= existing_end and end_date >= existing_start:
+                raise ValidationError("The selected date range conflicts with an existing booking.")
+
+        return cleaned_data
+
+
+
+    """ def clean(self):
         cleaned_data = super().clean()
         start_date = cleaned_data.get('start_date')
         end_date = cleaned_data.get('end_date')
@@ -70,7 +101,11 @@ class DeskForm(forms.ModelForm):
             if start_date <= existing_end and end_date >= existing_start:
                 raise ValidationError("The selected date range conflicts with an existing booking.")
 
-        return cleaned_data
+        return cleaned_data """
+    
+    
+    
+    
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -104,7 +139,7 @@ class SolidCredentialsForm(forms.Form):
     username = forms.CharField(max_length=100, label="Solid Username")
     password = forms.CharField(widget=forms.PasswordInput(), label="Solid Password")
     idp = forms.URLField(label="Identity Provider URL")
-    pod_endpoint = forms.URLField(label="POD Endpoint URL",  help_text="Enter the URL of your Solid POD.")
+    web_id = forms.URLField(label="Web-Id",  help_text="Enter the URL of your Solid's Web-Id.")
 
 
 class SolidLoginForm(forms.Form):

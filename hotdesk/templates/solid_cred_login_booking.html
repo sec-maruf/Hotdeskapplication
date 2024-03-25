@@ -66,14 +66,14 @@
                         <label for="end_date">End Date:</label>
                         <input type="datetime-local" id="end_date" name="end_date" class="form-control" required>
 
-                        <label for="desk_number">Desk Number:</label>
+                        <label for="desk_number">Desk's Quantity:</label>
                         <input id="desk_number" name="desk_number" type="number" value="{{ desk.desk_number }}">
 
-                        <label for="ergonomic_chair_number">Ergonomic Chair Number:</label>
+                        <label for="ergonomic_chair_number">Ergonomic Chair's Quantity:</label>
                         <input id="ergonomic_chair_number" name="ergonomic_chair_number" type="number"
                             value="{{ desk.ergonomic_chair_number }}" readonly>
 
-                        <label for="desk_monitor_number">Desk Monitor Number:</label>
+                        <label for="desk_monitor_number">Desk Monitor's Quantity:</label>
                         <input id="desk_monitor_number" name="desk_monitor_number" type="number"
                             value="{{ desk.desk_monitor_number }}" readonly>
                     </div>
@@ -87,7 +87,7 @@
                     {{ book_solid_form.username.label_tag }} {{ book_solid_form.username }}
                     {{ book_solid_form.password.label_tag }} {{ book_solid_form.password }}
                     {{ book_solid_form.idp.label_tag }} {{ book_solid_form.idp }}
-                    {{ book_solid_form.pod_endpoint.label_tag }} {{ book_solid_form.pod_endpoint }}
+                    {{ book_solid_form.web_id.label_tag }} {{ book_solid_form.web_id }}
                 </div>
             </fieldset>
         </div>

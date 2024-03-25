@@ -23,18 +23,20 @@ import logging
 from django.contrib import messages
 from .decorators import solid_username_required
 from .trust_awareness_calculation import apply_trust_filters, trust_filter_capacity, trust_filter_country, trust_filter_desk_amenity, trust_filter_desk_description,  trust_filter_postcode, trust_filter_price_for_city
-
+from django.db import transaction
 
 logger = logging.getLogger(__name__)
+allowed_usernames = ['hotdeskadmin','desk1','desk2','desk3','desk4','desk5','desk6','desk7','desk8','desk9','desk10']
 
-@solid_username_required(['hotdeskadmin'])
-def desk_create_view(request):
+""" def desk_create_view(request):
     desk_form = DeskForm(request.POST or None)
     solid_form = SolidCredentialsForm(request.POST or None)
 
     if request.method == 'POST':
         if desk_form.is_valid() and solid_form.is_valid():
             desk = desk_form.save()
+            solid_username = request.session.get('solid_credentials', {}).get('username')
+            desk.solid_username = solid_username  # Set the Solid username
             graph = desk_to_rdf(desk)
             turtle_data = graph.serialize(format="turtle").decode("utf-8")
             solid_data = solid_form.cleaned_data
@@ -56,19 +58,58 @@ def desk_create_view(request):
             messages.error(request, "Form validation failed")  
           
 
+    return render(request, 'desk_form1.html', {'desk_form': desk_form, 'solid_form': solid_form}) """
+
+@solid_username_required(allowed_usernames)
+def desk_create_view(request):
+    desk_form = DeskForm(request.POST or None)
+    solid_form = SolidCredentialsForm(request.POST or None)
+
+    if request.method == 'POST' and desk_form.is_valid() and solid_form.is_valid():
+        try:
+            with transaction.atomic():
+                # Create the desk instance and save to get an ID
+                desk = desk_form.save(commit=False)
+                solid_username = request.session.get('solid_credentials', {}).get('username')
+                desk.solid_username = solid_username
+                desk.save()  # Now the desk has an ID
+
+                # Serialize desk information to Turtle format for Solid POD
+                graph = desk_to_rdf(desk)
+                turtle_data = graph.serialize(format="turtle").decode("utf-8")
+                solid_data = solid_form.cleaned_data
+
+                # Interact with the Solid POD
+                api = get_solid_api(solid_data['idp'], solid_data['username'], solid_data['password'])
+                pod_file_url = f"{solid_data['web_id'].rstrip('/')}/desk{desk.id}.ttl"
+                response = api.create_file(pod_file_url, turtle_data, 'text/turtle')
+
+                if response.status_code != 201:
+                    raise Exception(f"Unexpected response from server: {response.status_code} - {response.content}")
+
+                messages.success(request, "Desk and POD file created successfully.")
+                return redirect(reverse('hotdesk:desk-detail', kwargs={'desk_id': desk.id}))
+
+        except Exception as e:
+            messages.error(request, f"Error during desk or Solid POD interaction: {e}")
+            # Note: In case of failure, the transaction will rollback including the desk save operation.
+
+    else:
+        messages.error(request, "Form validation failed")
+
     return render(request, 'desk_form1.html', {'desk_form': desk_form, 'solid_form': solid_form})
 
 
-
-
-@solid_username_required(['hotdeskadmin'])
+@solid_username_required(allowed_usernames)
 def desk_detail_view(request, desk_id):
     desk = get_object_or_404(Desk, pk=desk_id)
     desk_dict = model_to_dict(desk)
     adjusted_desk_dict = apply_trust_filters_to_single_desk(desk_dict)
     return render(request, 'desk_detail.html', {'desk': adjusted_desk_dict})
 
-@solid_username_required(['hotdeskadmin'])
+
+
+@solid_username_required(allowed_usernames)
 def desk_update_view(request, desk_id):
     desk = get_object_or_404(Desk, pk=desk_id)
     desk_form = DeskForm(request.POST or None, instance=desk)
@@ -79,7 +120,7 @@ def desk_update_view(request, desk_id):
 
             solid_data = solid_form.cleaned_data
             api = get_solid_api(solid_data['idp'], solid_data['username'], solid_data['password'])
-            pod_file_url = f"{solid_data['pod_endpoint'].rstrip('/')}/desk{desk.id}.ttl"
+            pod_file_url = f"{solid_data['web_id'].rstrip('/')}/desk{desk.id}.ttl"
 
             graph = desk_to_rdf(updated_desk)
             turtle_data = graph.serialize(format="turtle").decode("utf-8")
@@ -97,11 +138,14 @@ def desk_update_view(request, desk_id):
                 messages.error(request, "An unexpected error occurred: " + str(e))
                 updated_desk.refresh_from_db()
         else:
-            messages.error(request, "Form validation failed")
+            print("Desk Form Errors:", desk_form.errors)
+            print("Solid Form Errors:", solid_form.errors)
+            messages.error(request, "Form validation failed") 
     else:
         # Instantiate the forms for a GET request
         desk_form = DeskForm(instance=desk)
         solid_form = SolidCredentialsForm()
+               
 
     return render(request, 'desk_update.html', {
         'desk_form': desk_form,
@@ -109,7 +153,10 @@ def desk_update_view(request, desk_id):
         'desk_id': desk_id
     })
 
-@solid_username_required(['hotdeskadmin'])
+
+
+
+@solid_username_required(['hotdeskadmin','desk1','desk2','desk3','desk4','desk5','desk6','desk7','desk8','desk9','desk10'])
 def desk_delete_view(request, desk_id):
     desk = get_object_or_404(Desk, pk=desk_id)
     solid_form = SolidCredentialsForm(request.POST or None)
@@ -120,7 +167,7 @@ def desk_delete_view(request, desk_id):
 
         try:
             # Define the full URL for the desk's Solid POD file
-            pod_file_url = f"{solid_data['pod_endpoint'].rstrip('/')}/desk{desk.id}.ttl"
+            pod_file_url = f"{solid_data['web_id'].rstrip('/')}/desk{desk.id}.ttl"
 
             # Attempt to delete the file from the Solid POD
             api.delete(pod_file_url)
@@ -139,6 +186,7 @@ def desk_delete_view(request, desk_id):
 
 
 
+
 def solid_login_view(request):
     if request.method == 'POST':
         form = SolidLoginForm(request.POST)
@@ -167,10 +215,10 @@ def solid_logout_view(request):
     return redirect('hotdesk:solid-login')
 
 
-@solid_username_required(['hotdeskadmin'])
+""" @solid_username_required(['hotdeskadmin'])
 def dashboard_view(request):
     desks = Desk.objects.all() # Fetch all desk instances
-    return render(request, 'dashboard.html', {'desks': desks})
+    return render(request, 'dashboard.html', {'desks': desks}) """
 
 
     
@@ -200,11 +248,10 @@ def solid_logout_view(request):
 
     # Redirect to the login page or another appropriate page
     return redirect('hotdesk:solid-login')
-
-
-@solid_username_required(['hotdeskadmin'])
+@solid_username_required(['hotdeskadmin','desk1','desk2','desk3','desk4','desk5','desk6','desk7','desk8','desk9','desk10'])
 def dashboard_view(request):
-    desks = Desk.objects.all() # Fetch all desk instances
+    solid_username = request.session.get('solid_credentials', {}).get('username')
+    desks = Desk.objects.filter(solid_username=solid_username)  # Filter desks by Solid username
     return render(request, 'dashboard.html', {'desks': desks})
 
 
@@ -215,11 +262,11 @@ from .solid import SolidAPI, Auth  # Ensure to import your SolidAPI and Auth cla
 from httpx import HTTPStatusError
 
 
-def solid_file_view(request):
+def desk_fetching_from_solid(request):
     auth = Auth()  # Configure this with the correct credentials
     solid_api_instance = SolidAPI(auth=auth)
 
-    file_urls = ["https://desk1.solidcommunity.net/public/desk1.ttl","https://desk1.solidcommunity.net/public/desk2.ttl"]
+    file_urls = ["https://desk1.solidcommunity.net/public/desk3.ttl","https://desk1.solidcommunity.net/public/desk6.ttl","https://desk1.solidcommunity.net/public/desk5.ttl","https://desk1.solidcommunity.net/public/desk7.ttl"]
     all_desk_details = []
     error_messages = []
    # booked_desk_ids = get_booked_desk_ids()
@@ -233,7 +280,8 @@ def solid_file_view(request):
             request.session['all_desk_details'] = all_desk_details  # Store in session
             request.session.save()
         except HTTPStatusError as e:
-            error_messages.append(f"HTTP Error for {file_url}: {e.response.status_code} - {e.response.text}")
+            if e.response.status_code != 404:
+               error_messages.append(f"HTTP Error for {file_url}: {e.response.status_code} - {e.response.text}")
         except Exception as e:
             error_messages.append(f"An unexpected error occurred for {file_url}: {str(e)}")
     # Sort desks by trust score
@@ -244,58 +292,14 @@ def solid_file_view(request):
     trust_status_city_postcode= trust_filter_postcode(all_desk_details)
     trust_status_description= trust_filter_desk_description(all_desk_details)
     trust_status_price_for_city = trust_filter_price_for_city(all_desk_details)
-    trust_color_status = apply_trust_filters(all_desk_details)
+    total_trust_decision = apply_trust_filters(all_desk_details)
     
-    return render(request, 'solid_file.html', {
+    return render(request, 'desk_fetch.html', {
         'all_desk_details': trust_status_desks,'all_desk_details':trust_status_country, 'all_desk_details':trust_status_capacity,
        'all_desk_details': trust_status_city_postcode,'all_desk_details': trust_status_description, 
-       'all_desk_details': trust_status_price_for_city,'all_desk_details': trust_color_status,'error_messages': error_messages
+       'all_desk_details': trust_status_price_for_city,'all_desk_details': total_trust_decision,'error_messages': error_messages
     }) 
 
-
-
-
-""" def deskbook(request):
-    desk_id = request.POST.get('desk_id') or request.GET.get('desk_id')
-
-    if not desk_id:
-        messages.error(request, "No desk ID provided.")
-        return redirect('hotdesk:solid-file')
-
-    desk = get_object_or_404(Desk, desk_id=desk_id)
-    book_desk_form = DeskForm(request.POST or None, instance=desk)
-    book_solid_form = SolidCredentialsForm(request.POST or None)
-
-    if request.method == 'POST':
-        if book_desk_form.is_valid() and book_solid_form.is_valid():
-            desk = book_desk_form.save()
-            solid_data = book_solid_form.cleaned_data
-            # Serialize the desk object to Turtle format
-            turtle_data = desk_to_rdf(desk).serialize(format="turtle").decode("utf-8")
-        
-            
-            try:
-                api = get_solid_api(solid_data['idp'], solid_data['username'], solid_data['password'])
-                pod_file_url = f"{solid_data['pod_endpoint'].rstrip('/')}/booking{desk.desk_id}.ttl"
-
-                response = api.create_file(pod_file_url, turtle_data, 'text/turtle')
-                if response.status_code == 201:
-                    #print("Attempting to redirect to booking confirmation")
-                    desk.save()
-                    messages.success(request, "Book POD file created successfully.")
-                    return redirect('hotdesk:booking_confirmation', desk_id=desk.desk_id)
-                    
-                else:
-                    messages.error(request, f"Unexpected response from server: {response.status_code} - {response.content}")
-                
-            except Exception as e:
-                messages.error(request, f"Error during Solid POD interaction: {e}")
-        else:
-            print("Desk Form Errors:", book_desk_form.errors)
-            print("Solid Form Errors:", book_solid_form.errors)
-            messages.error(request, "Form validation failed")
-
-    return render(request, 'solid_cred_login_booking.html', {'book_desk_form': book_desk_form,'book_solid_form': book_solid_form,  'desk': desk}) """
 
 
 def deskbook(request):
@@ -331,7 +335,7 @@ def deskbook(request):
                 
                 try:
                     api = get_solid_api(solid_data['idp'], solid_data['username'], solid_data['password'])
-                    pod_file_url = f"{solid_data['pod_endpoint'].rstrip('/')}/booking{desk.desk_id}.ttl"
+                    pod_file_url = f"{solid_data['web_id'].rstrip('/')}/booking{desk.desk_id}.ttl"
 
                     response = api.create_file(pod_file_url, turtle_data, 'text/turtle')
                     if response.status_code == 201:
@@ -357,12 +361,3 @@ def deskbook(request):
 def booking_confirmation(request, desk_id):
     desk = get_object_or_404(Desk, desk_id=desk_id)
     return render(request, 'booking_confirmation.html', {'desk': desk})
-
-
-""" def get_booked_desk_ids():
-    
-    # Query the Desk model for desks that are booked
-    booked_desks = Desk.objects.filter(is_booked=True)
-    # Extract the desk_id of each booked desk and return it as a list
-    booked_desk_ids = [desk.desk_id for desk in booked_desks]
-    return booked_desk_ids """

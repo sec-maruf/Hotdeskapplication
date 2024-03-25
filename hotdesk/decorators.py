@@ -15,3 +15,4 @@ def solid_username_required(allowed_usernames):
                 return redirect('solid-login')
         return _wrapped_view
     return decorator
+
